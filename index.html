@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Generatore etichette A4</title>
+<title>Genera Etichette</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#1b2a4a">
+
 <style>
 :root{--paper:#f6f4ef;--card:#fff;--ink:#1c1b19;--mut:#7a766e;--line:#e6e2d9;--navy:#1b2a4a;--hot:#d9480f;--desk:#2a2e35}
 *{box-sizing:border-box}
@@ -335,6 +340,10 @@ addEventListener('resize',fit);
 $('print').onclick=()=>window.print();
 ['mt','mx','gap','cut'].forEach(i=>$(i).oninput=render);
 render();load();
+if('serviceWorker' in navigator){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW',e)));
+}
+
 </script>
 </body>
 </html>
