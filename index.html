@@ -50,7 +50,7 @@ button.hot{background:var(--hot)}
 .sheet{width:210mm;height:297mm;background:#fff;margin:0 auto 26px;box-shadow:0 10px 40px #0008;border-radius:2px;padding:var(--mt) var(--mx);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);column-gap:var(--gap);page-break-after:always;overflow:hidden}
 .lbl{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2mm 4mm;overflow:hidden;font-family:Roboto,Arial,sans-serif;color:#000}
 .cut .lbl{border:.2mm solid #777;border-radius:2mm}
-.lbl .brand{font-size:17mm;font-weight:900;line-height:1}
+.lbl .brand{font-size:17mm;font-weight:900;line-height:1;white-space:nowrap}.lbl .brand.inu{font-size:15mm}.lbl .brand.top{font-size:10.5mm;margin-bottom:1.5mm}.lbl .mod .art{font-size:7.5mm;font-weight:400}
 .lbl .mod{font-weight:700;font-size:10mm;line-height:1.15;margin-top:1mm}
 .lbl .sub{font-size:7mm;line-height:1.1}
 .lbl .size{font-weight:700;font-size:10mm;line-height:1.2;margin-top:1mm}
@@ -70,10 +70,11 @@ button.hot{background:var(--hot)}
   <div><h1>Generatore etichette</h1><small>Fogli A4 · 6 etichette per foglio</small></div></header>
  <div class="scroll">
  <section><h2>Articolo</h2>
-  <div id="sw"><input id="q" placeholder="Cerca codice articolo, es. X210C503" autocomplete="off"><input type="hidden" id="art"><div id="sug"></div></div>
+  <div id="sw"><input id="q" placeholder="Cerca codice articolo, es. X210C503 o X220LGC503" autocomplete="off"><input type="hidden" id="art"><div id="sug"></div></div>
   <div id="status">Caricamento…</div>
  </section>
  <section><h2>Etichetta</h2>
+  <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option></select></div>
   <div class="row"><div class="f"><label>Modello</label><input id="mod"></div><div class="f"><label>Dimensione</label><input id="size"></div></div>
   <div class="f"><label>Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
   <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
@@ -101,18 +102,69 @@ let rows=[],items=[];
 const eanMem=JSON.parse(localStorage.getItem('eanMem')||'{}');
 
 /* ---------- Supabase ---------- */
+function baseOf(m){const x=(m||'').toUpperCase().match(/([ACR]\d{3})(?!\d)/);return x?x[1]:''}
+function parseDesc(art,raw,sizeBase){
+  const full=(raw||'');
+  let d=full.replace(/^[\s+*]+/,'').replace(/\s+/g,' ').trim();
+  let mod='',modTxt='',m=d.match(/(?:^|\s)X{0,2}([A-Z]{0,4}?[ACR])\s*\/?\s*(\d{3})([A-Z]\d)?(?=[\s\-]|$)/i);
+  if(m){mod=(m[1]+m[2]+(m[3]||'')).toUpperCase();modTxt=m[0].trim()}
+  else{
+    const a=(art||'').toUpperCase().match(/^X2[12]0(?:[A-Z]{1,4}?)?([ACR]\d{3})(?!\d)/);
+    modTxt=d.split(' ')[0]||'';
+    mod=a?a[1]:modTxt.replace(/^X{1,2}(?=[A-Z])/,'');
+  }
+  let rest=d.replace(modTxt,' ').replace(/(^|\s)X(?=\s|$)/g,' ');
+  let size='';
+  const sm=rest.match(/\d+(?:[.,]\d+)?\s*X\s*\d+(?:[.,]\d+)?/gi);
+  if(sm){const z=sm[sm.length-1];size=z.replace(/\s/g,'').toUpperCase();rest=rest.replace(z,' ')}
+  else{
+    const dm=rest.match(/(?:DIAM\.?|ROT\.?\s*DM\.?|DM\.?|ROT\.)\s*(\d+(?:[.,]\d+)?)/i);
+    if(dm){size='DM.'+dm[1];rest=rest.replace(dm[0],' ')}
+  }
+  rest=rest.replace(/\d+(?:[.,]\d+)?\s*X(?=\s|$)/gi,' ');
+  rest=rest.replace(/\b\d+(?:\.\d{3})*\s*(?:ETICHETTE|ETICH|ETIC|ETI|ET)\b\.?/gi,' ')
+           .replace(/\b(?:ETICHETTE|ETICH|ETIC|ETI|ET)\b\.?/gi,' ');
+  if(!size){const bm=rest.match(/\b\d{2,3}[.,]\d\b/);if(bm){size='DM.'+bm[0];rest=rest.replace(bm[0],' ')}}
+  rest=rest.replace(/\b[A-Z]*\d{3,}[A-Z]?\d*\b/gi,' ')
+           .replace(/\b\d+(?:[.,]\d+)*\b/g,' ')
+           .replace(/SUPER\s*PERM(?:ANENTE|\.)?/gi,'SUPER PERMANENTE')
+           .replace(/\s[-–]+(?=\s)/g,' ').replace(/\s+/g,' ').replace(/^[\s.,\-]+|[\s.,\-]+$/g,'');
+  // misura mancante o troncata (la descrizione è tagliata a 40 caratteri): ricava dagli altri articoli dello stesso modello
+  const known=sizeBase&&sizeBase[baseOf(mod)];
+  if(known&&(!size||(full.length>=38&&known.startsWith(size))))size=known;
+  return {mod,size,sub:rest};
+}
+function buildSizeBase(rows){
+  const c={};
+  rows.forEach(r=>{
+    const raw=r.descrizione||'';if(raw.length>=38)return;
+    const p=parseDesc(r.codice_articolo,raw);const b=baseOf(p.mod);
+    if(b&&p.size){(c[b]=c[b]||{})[p.size]=(c[b][p.size]||0)+1}
+  });
+  const out={};
+  for(const b in c)out[b]=Object.entries(c[b]).sort((x,y)=>y[1]-x[1]||y[0].length-x[0].length)[0][0];
+  return out;
+}
+
+let sizeBase={};
 async function load(){
   try{
-    const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&codice_articolo=like.X210*&order=codice_articolo&limit=5000`,
-      {headers:{apikey:SB_KEY}});
-    if(!r.ok)throw new Error(r.status+' '+await r.text());
+    const f='or=(codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
+    const all=[];
+    for(let off=0;;off+=1000){
+      const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
+      if(!r.ok)throw new Error(r.status+' '+await r.text());
+      const part=await r.json();all.push(...part);
+      $('status').textContent='Caricamento… '+all.length;
+      if(part.length<1000)break;
+    }
     const m={};
-    (await r.json()).forEach(x=>{
+    all.forEach(x=>{
       const o=m[x.codice_articolo]||(m[x.codice_articolo]={codice_articolo:x.codice_articolo,descrizione:x.descrizione,eans:[]});
       if(/^\d{13}$/.test(x.codice||'')&&!o.eans.includes(x.codice))o.eans.push(x.codice);
     });
-    rows=Object.values(m);
-    $('status').textContent=rows.length+' articoli X210';
+    rows=Object.values(m);sizeBase=buildSizeBase(rows);
+    $('status').textContent=rows.length+' articoli X210 / X220';
     fill();
   }catch(e){$('status').classList.add('err');$('status').textContent='Errore Supabase: '+e.message}
 }
@@ -126,14 +178,19 @@ function fill(){
   $('sug').style.display=cur.length?'block':'none';
 }
 function choose(r){$('art').value=r.codice_articolo;$('q').value=r.codice_articolo;$('sug').style.display='none';pick()}
+function fillFields(){
+  const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
+  const p=parseDesc(r.codice_articolo,r.descrizione,sizeBase),t=$('tpl').value;
+  let mod=p.mod,sub=p.sub;
+  if(t==='inu'){const n=(r.descrizione||'').match(/(?:^|[\s+*])X(\d{4,6})(?=[\s\-]|$)/i);if(n)mod=n[1];sub=''}
+  if(t==='top')sub=sub.replace(/TOP\s*QUALITY/i,'').replace(/\s+/g,' ').trim();
+  $('mod').value=mod;$('size').value=p.size;$('sub').value=sub;
+}
+$('tpl').onchange=fillFields;
 function pick(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
-  const d=(r.descrizione||'').replace(/^\++/,'').trim();
-  const size=(d.match(/\d+(?:[.,]\d+)?\s*X\s*\d+(?:[.,]\d+)?/gi)||[]).pop()||'';
-  const pcs=(d.match(/(\d+)\s+ETICHETTE/i)||[])[1]||'';
-  const mod=d.split(/\s+/)[0]||'';
-  let mid=d.slice(mod.length).replace(size,'').replace(/(\d+\s*)?ETICH\w*\.?/gi,'').replace(/\s+/g,' ').trim();
-  $('mod').value=mod;$('size').value=size.replace(/\s/g,'').toUpperCase();$('pcs').value='10';$('sub').value=mid;
+  $('tpl').value=/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
+  fillFields();$('pcs').value='10';
   $('eans').innerHTML=[...new Set([...r.eans,...Object.values(eanMem)])].map(e=>`<option value="${e}">`).join('');
   $('ean').value=eanMem[r.codice_articolo]||r.eans[0]||'';
   const sl=$('eansel');sl.style.display=r.eans.length>1?'block':'none';
@@ -161,8 +218,10 @@ function barcode(c){
 function label(it){
   if(!it)return '<div class="lbl"></div>';
   const c=full13(it.ean);
-  return `<div class="lbl"><div class="brand">MARKIN</div><div class="mod">${it.mod}</div>
-  ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${it.size}</div>
+  const t=it.tpl||'markin',brand={markin:'MARKIN',inu:'INLINEA',top:'TOP QUALITY'}[t];
+  const size=t==='markin'?it.size:it.size.replace(/(\d)X(?=\d)/g,'$1x');
+  return `<div class="lbl"><div class="brand ${t==='markin'?'':t}">${brand}</div><div class="mod">${t==='inu'?'<span class="art">Art.</span> ':''}${it.mod}</div>
+  ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${size}</div>
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
   <div class="foot"><span>lotto ${it.lotto}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
@@ -204,7 +263,7 @@ $('add').onclick=()=>{
   if(!$('mod').value)return alert('Scegli un articolo');
   if(!full13($('ean').value)&&!confirm('EAN non valido o vuoto – continuare senza codice a barre?'))return;
   if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
-  items.push({art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
+  items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
     lotto:$('lotto').value,pcs:$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(6,Math.max(1,+$('start').value||1))});
   $('start').value=1;render();
 };
