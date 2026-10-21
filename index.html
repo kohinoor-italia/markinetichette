@@ -78,7 +78,9 @@ button.hot{background:var(--hot)}
   <div class="row"><div class="f"><label>Modello</label><input id="mod"></div><div class="f"><label>Dimensione</label><input id="size"></div></div>
   <div class="f"><label>Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
   <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
-  <div class="row"><div class="f"><label>Lotto</label><input id="lotto" value="0065025021823"></div><div class="f"><label>Pz/confezione</label><input id="pcs" value="10"></div></div>
+<div class="row"><div class="f"><label>Lotto</label><input id="lotto" value=""></div><div class="f"><label>Pz/confezione</label><input id="pcs" value="10"></div></div>
+
+
  </section>
  <section><h2>Sul foglio</h2>
   <div class="row"><div class="f"><label>N. etichette</label><input id="qty" type="number" min="1" value="6"></div><div class="f"><label>Parti dalla pos.</label><input id="start" type="number" min="1" max="6" value="1"></div></div>
@@ -87,7 +89,7 @@ button.hot{background:var(--hot)}
  </section>
  <section><h2>Foglio A4 (mm)</h2>
   <div class="row"><div class="f"><label>Sopra/sotto</label><input id="mt" type="number" value="8" step=".5"></div><div class="f"><label>Sinistra/destra</label><input id="mx" type="number" value="6" step=".5"></div><div class="f"><label>Spazio</label><input id="gap" type="number" value="3" step=".5"></div></div>
-  <label class="chk"><input type="checkbox" id="cut"> Mostra il contorno dell'etichetta (solo test)</label>
+  <label class="chk"><input type="checkbox" id="cut" checked> Mostra il contorno dell'etichetta (solo test)</label>
  </section>
  </div>
  <div class="actions"><button class="hot" id="print">Stampa</button><button class="sec" id="clear">Svuota</button></div>
@@ -171,12 +173,14 @@ async function load(){
 let sel=-1,cur=[];
 function fill(){
   const q=$('q').value.trim().toLowerCase();
-  cur=rows.filter(r=>!q||(r.codice_articolo+' '+(r.descrizione||'')).toLowerCase().includes(q))
+  if(!q){cur=[];sel=-1;$('sug').innerHTML='';$('sug').style.display='none';return}
+  cur=rows.filter(r=>(r.codice_articolo+' '+(r.descrizione||'')).toLowerCase().includes(q))
     .sort((a,b)=>(b.codice_articolo.toLowerCase().startsWith(q))-(a.codice_articolo.toLowerCase().startsWith(q))).slice(0,10);
   sel=cur.length?0:-1;
   $('sug').innerHTML=cur.map((r,i)=>`<div data-i="${i}" class="${i===sel?'on':''}">${r.codice_articolo}<small>${r.descrizione||''}</small></div>`).join('');
   $('sug').style.display=cur.length?'block':'none';
 }
+
 function choose(r){$('art').value=r.codice_articolo;$('q').value=r.codice_articolo;$('sug').style.display='none';pick()}
 function fillFields(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
@@ -223,7 +227,7 @@ function label(it){
   return `<div class="lbl"><div class="brand ${t==='markin'?'':t}">${brand}</div><div class="mod">${t==='inu'?'<span class="art">Art.</span> ':''}${it.mod}</div>
   ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${size}</div>
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
-  <div class="foot"><span>lotto ${it.lotto}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
+  <div class="foot"><span>${it.lotto?'lotto '+it.lotto:''}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
 function render(){
   const slots=[];
@@ -246,7 +250,8 @@ function render(){
   s.setProperty('--mt',$('mt').value+'mm');s.setProperty('--mx',$('mx').value+'mm');s.setProperty('--gap',$('gap').value+'mm');
 }
 
-$('q').oninput=()=>{$('art').value='';fill()};$('q').onfocus=fill;
+$('q').oninput=()=>{$('art').value='';fill()};
+
 $('q').onkeydown=e=>{
   if(!cur.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+cur.length)%cur.length;
@@ -265,8 +270,9 @@ $('add').onclick=()=>{
   if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
   items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
     lotto:$('lotto').value,pcs:$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(6,Math.max(1,+$('start').value||1))});
-  $('start').value=1;render();
+  $('start').value=1;$('cut').checked=false;render();
 };
+
 $('list').onclick=e=>{if(e.target.dataset.i!==undefined){items.splice(e.target.dataset.i,1);render()}};
 $('clear').onclick=()=>{items=[];render()};
 function fit(){const pv=$('preview'),z=Math.min(1,(pv.clientHeight-90)/1123,(pv.clientWidth-60)/794);$('pages').style.zoom=Math.max(.35,z)}
