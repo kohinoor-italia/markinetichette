@@ -54,9 +54,9 @@ button.hot{background:var(--hot)}
 .lbl .mod{font-weight:700;font-size:10mm;line-height:1.15;margin-top:1mm}
 .lbl .sub{font-size:7mm;line-height:1.1}
 .lbl .size{font-weight:700;font-size:10mm;line-height:1.2;margin-top:1mm}
-.lbl .bc{width:42mm;margin-top:3mm}
-.lbl .bc svg{width:100%;height:16mm;display:block}
-.lbl .dig{display:flex;justify-content:space-between;font-family:monospace;font-size:3.6mm;margin-top:.5mm;padding:0 1mm}
+.lbl .bc{position:relative;width:46mm;height:20mm;margin-top:3mm}
+.lbl .bc svg{position:absolute;left:4mm;top:0;width:42mm;height:19mm;display:block}
+.lbl .dig span{position:absolute;top:16.3mm;height:3.6mm;line-height:3.6mm;font-family:monospace;font-size:3.6mm;display:flex;justify-content:space-between}.lbl .dig i{font-style:normal}.lbl .dig .d0{left:0;width:3mm}.lbl .dig .d1{left:5.5mm;width:18.2mm}.lbl .dig .d2{left:26.2mm;width:18.2mm}
 .lbl .foot{display:flex;justify-content:space-between;width:100%;font-size:3.6mm;margin-top:1.5mm;padding:0 2mm}
 @media print{
  html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar{display:none}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
@@ -153,8 +153,8 @@ function barcode(c){
   let b='101',p=PAR[c[0]];
   for(let i=0;i<6;i++)b+=(p[i]==='L'?L:G)[c[i+1]];
   b+='01010';for(let i=7;i<13;i++)b+=R[c[i]];b+='101';
-  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1')r+=`<rect x="${i}" y="0" width="1" height="50"/>`;
-  return `<svg viewBox="0 0 95 50" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
+  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1'){const g=i<3||(i>=45&&i<50)||i>=92;r+=`<rect x="${i}" y="0" width="1" height="${g?19:16}"/>`}
+  return `<svg viewBox="0 0 95 19" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
 }
 
 /* ---------- Etichete ---------- */
@@ -163,7 +163,7 @@ function label(it){
   const c=full13(it.ean);
   return `<div class="lbl"><div class="brand">MARKIN</div><div class="mod">${it.mod}</div>
   ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${it.size}</div>
-  ${c?`<div class="bc">${barcode(c)}<div class="dig"><span>${c[0]}</span><span>${c.slice(1,7)}</span><span>${c.slice(7)}</span></div></div>`:''}
+  ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
   <div class="foot"><span>lotto ${it.lotto}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
 function render(){
