@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generator etichete A4</title>
+<style>
+:root{--paper:#fbfaf7;--ink:#1c1b19;--mut:#7a766e;--line:#e4e0d7;--navy:#1b2a4a;--hot:#d9480f;--desk:#2a2e35}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI Variable Text","SF Pro Text","Segoe UI",system-ui,sans-serif;background:var(--desk);color:var(--ink);display:flex;height:100vh;overflow:hidden;font-size:14px}
+#panel{width:400px;flex:none;background:var(--paper);display:flex;flex-direction:column;height:100vh;box-shadow:6px 0 30px #0006;z-index:2}
+#panel .scroll{flex:1;overflow:auto;padding:4px 24px 20px}
+#panel header{padding:22px 24px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+#panel .logo{width:38px;height:38px;border-radius:9px;background:var(--navy);display:grid;place-items:center}
+#panel h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+#panel header small{color:var(--mut);font-size:12px}
+section{padding:18px 0 6px;border-bottom:1px solid var(--line)}
+section:last-child{border:0}
+h2{font-size:13px;font-weight:700;margin:0 0 10px;padding-left:9px;border-left:3px solid var(--hot);line-height:1.1}
+label{display:block;font-size:12px;color:var(--mut);margin:0 0 4px;font-weight:500}
+.f{margin-bottom:12px}
+input,select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:0;border-color:var(--navy);box-shadow:0 0 0 3px #1b2a4a22}
+#q{padding-left:34px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237a766e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E") 11px 50%/16px no-repeat;font-size:15px}
+#ean{font-family:Consolas,"SF Mono",monospace;letter-spacing:.06em}
+button{font:inherit;width:100%;padding:11px;border:0;border-radius:9px;background:var(--navy);color:#fff;cursor:pointer;font-weight:600;transition:transform .1s,filter .15s}
+button:hover{filter:brightness(1.15)}button:active{transform:translateY(1px)}
+button.sec{background:#ece8df;color:var(--ink)}
+button.hot{background:var(--hot)}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);margin:2px 0 12px;cursor:pointer}
+.chk input{width:auto}
+#sw{position:relative}
+#sug{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 30px #0003;max-height:300px;overflow:auto;z-index:10;display:none;margin-top:4px}
+#sug div{padding:9px 12px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:1px solid #f3f0e9}
+#sug div:last-child{border:0}
+#sug div:hover,#sug div.on{background:#eef1f8}#sug small{display:block;color:var(--mut);font-size:12px;font-weight:400;margin-top:1px}
+#status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);margin:8px 0 12px}
+#status:before{content:"";width:7px;height:7px;border-radius:50%;background:#2f9e44}
+#status.err{color:#c92a2a}#status.err:before{background:#c92a2a}
+#list{margin:12px 0 4px;display:flex;flex-direction:column;gap:6px}
+.it{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
+.it b{font-weight:700}.it span.x{cursor:pointer;color:var(--mut);padding:2px 7px;border-radius:5px}.it span.x:hover{background:#fde8e1;color:var(--hot)}
+.actions{padding:16px 24px 20px;border-top:1px solid var(--line);background:var(--paper);display:flex;gap:10px}
+.actions .hot{flex:2}.actions .sec{flex:1}
+#preview{flex:1;overflow:auto;position:relative;background:radial-gradient(#ffffff14 1px,transparent 1.5px) 0 0/22px 22px,var(--desk)}
+#bar{position:sticky;top:0;z-index:3;display:flex;justify-content:center;padding:14px}
+#meta{background:#14161ad9;color:#e9e6df;backdrop-filter:blur(6px);padding:7px 16px;border-radius:999px;font-size:12.5px;border:1px solid #ffffff1f}
+#pages{padding:6px 30px 50px;transform-origin:top center}
+.sheet{width:210mm;height:297mm;background:#fff;margin:0 auto 26px;box-shadow:0 10px 40px #0008;border-radius:2px;padding:var(--mt) var(--mx);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);column-gap:var(--gap);page-break-after:always;overflow:hidden}
+.lbl{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2mm 4mm;overflow:hidden;font-family:Roboto,Arial,sans-serif;color:#000}
+.cut .lbl{border:.2mm solid #777;border-radius:2mm}
+.lbl .brand{font-size:17mm;font-weight:900;line-height:1}
+.lbl .mod{font-weight:700;font-size:10mm;line-height:1.15;margin-top:1mm}
+.lbl .sub{font-size:7mm;line-height:1.1}
+.lbl .size{font-weight:700;font-size:10mm;line-height:1.2;margin-top:1mm}
+.lbl .bc{width:42mm;margin-top:3mm}
+.lbl .bc svg{width:100%;height:16mm;display:block}
+.lbl .dig{display:flex;justify-content:space-between;font-family:monospace;font-size:3.6mm;margin-top:.5mm;padding:0 1mm}
+.lbl .foot{display:flex;justify-content:space-between;width:100%;font-size:3.6mm;margin-top:1.5mm;padding:0 2mm}
+@media print{
+ html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar{display:none}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
+ .sheet{box-shadow:none;margin:0}@page{size:A4;margin:0}
+}
+</style>
+</head>
+<body>
+<div id="panel">
+ <header><div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M5 5v14M9 5v14M13 5v14M17 5v14M20 5v14" /></svg></div>
+  <div><h1>Generator etichete</h1><small>Coli A4 · 6 etichete pe foaie</small></div></header>
+ <div class="scroll">
+ <section><h2>Articol</h2>
+  <div id="sw"><input id="q" placeholder="Caută cod articol, ex. X210C503" autocomplete="off"><input type="hidden" id="art"><div id="sug"></div></div>
+  <div id="status">Se încarcă…</div>
+ </section>
+ <section><h2>Etichetă</h2>
+  <div class="row"><div class="f"><label>Model</label><input id="mod"></div><div class="f"><label>Dimensiune</label><input id="size"></div></div>
+  <div class="f"><label>Linie 2 (ex. SUPER PERMANENTE)</label><input id="sub"></div>
+  <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="alege din listă sau scrie"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
+  <div class="row"><div class="f"><label>Lotto</label><input id="lotto" value="0065025021823"></div><div class="f"><label>Buc/pachet</label><input id="pcs" value="10"></div></div>
+ </section>
+ <section><h2>Pe foaie</h2>
+  <div class="row"><div class="f"><label>Nr. etichete</label><input id="qty" type="number" min="1" value="6"></div><div class="f"><label>Începe de la poz.</label><input id="start" type="number" min="1" max="6" value="1"></div></div>
+  <button id="add">Adaugă pe foaie</button>
+  <div id="list"></div>
+ </section>
+ <section><h2>Foaia A4 (mm)</h2>
+  <div class="row"><div class="f"><label>Sus/jos</label><input id="mt" type="number" value="8" step=".5"></div><div class="f"><label>Stânga/dreapta</label><input id="mx" type="number" value="6" step=".5"></div><div class="f"><label>Spațiu</label><input id="gap" type="number" value="3" step=".5"></div></div>
+  <label class="chk"><input type="checkbox" id="cut"> Arată conturul etichetei (doar pentru test)</label>
+ </section>
+ </div>
+ <div class="actions"><button class="hot" id="print">Printează</button><button class="sec" id="clear">Golește</button></div>
+</div>
+<div id="preview"><div id="bar"><div id="meta"></div></div><div id="pages"></div></div>
+
+<script>
+const SB_URL='https://fndjrfieitieqzafhyzz.supabase.co';
+const SB_KEY='sb_publishable_bHDKjiKAVHqW199ICw7i2g_O3olYMAr';
+const $=id=>document.getElementById(id);
+let rows=[],items=[];
+const eanMem=JSON.parse(localStorage.getItem('eanMem')||'{}');
+
+/* ---------- Supabase ---------- */
+async function load(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&codice_articolo=like.X210*&order=codice_articolo&limit=5000`,
+      {headers:{apikey:SB_KEY}});
+    if(!r.ok)throw new Error(r.status+' '+await r.text());
+    const m={};
+    (await r.json()).forEach(x=>{
+      const o=m[x.codice_articolo]||(m[x.codice_articolo]={codice_articolo:x.codice_articolo,descrizione:x.descrizione,eans:[]});
+      if(/^\d{13}$/.test(x.codice||'')&&!o.eans.includes(x.codice))o.eans.push(x.codice);
+    });
+    rows=Object.values(m);
+    $('status').textContent=rows.length+' articole X210';
+    fill();
+  }catch(e){$('status').classList.add('err');$('status').textContent='Eroare Supabase: '+e.message}
+}
+let sel=-1,cur=[];
+function fill(){
+  const q=$('q').value.trim().toLowerCase();
+  cur=rows.filter(r=>!q||(r.codice_articolo+' '+(r.descrizione||'')).toLowerCase().includes(q))
+    .sort((a,b)=>(b.codice_articolo.toLowerCase().startsWith(q))-(a.codice_articolo.toLowerCase().startsWith(q))).slice(0,10);
+  sel=cur.length?0:-1;
+  $('sug').innerHTML=cur.map((r,i)=>`<div data-i="${i}" class="${i===sel?'on':''}">${r.codice_articolo}<small>${r.descrizione||''}</small></div>`).join('');
+  $('sug').style.display=cur.length?'block':'none';
+}
+function choose(r){$('art').value=r.codice_articolo;$('q').value=r.codice_articolo;$('sug').style.display='none';pick()}
+function pick(){
+  const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
+  const d=(r.descrizione||'').replace(/^\++/,'').trim();
+  const size=(d.match(/\d+(?:[.,]\d+)?\s*X\s*\d+(?:[.,]\d+)?/gi)||[]).pop()||'';
+  const pcs=(d.match(/(\d+)\s+ETICHETTE/i)||[])[1]||'';
+  const mod=d.split(/\s+/)[0]||'';
+  let mid=d.slice(mod.length).replace(size,'').replace(/(\d+\s*)?ETICH\w*\.?/gi,'').replace(/\s+/g,' ').trim();
+  $('mod').value=mod;$('size').value=size.replace(/\s/g,'').toUpperCase();$('pcs').value='10';$('sub').value=mid;
+  $('eans').innerHTML=[...new Set([...r.eans,...Object.values(eanMem)])].map(e=>`<option value="${e}">`).join('');
+  $('ean').value=eanMem[r.codice_articolo]||r.eans[0]||'';
+  const sl=$('eansel');sl.style.display=r.eans.length>1?'block':'none';
+  sl.innerHTML=r.eans.map(e=>`<option ${e===$('ean').value?'selected':''}>${e}</option>`).join('');
+}
+
+/* ---------- EAN-13 ---------- */
+const L=['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+const G=['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+const R=['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+const PAR=['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+function full13(s){
+  s=s.replace(/\D/g,'');if(s.length===12){let t=0;for(let i=0;i<12;i++)t+=+s[i]*(i%2?3:1);s+=(10-t%10)%10}
+  return s.length===13?s:null;
+}
+function barcode(c){
+  let b='101',p=PAR[c[0]];
+  for(let i=0;i<6;i++)b+=(p[i]==='L'?L:G)[c[i+1]];
+  b+='01010';for(let i=7;i<13;i++)b+=R[c[i]];b+='101';
+  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1')r+=`<rect x="${i}" y="0" width="1" height="50"/>`;
+  return `<svg viewBox="0 0 95 50" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
+}
+
+/* ---------- Etichete ---------- */
+function label(it){
+  if(!it)return '<div class="lbl"></div>';
+  const c=full13(it.ean);
+  return `<div class="lbl"><div class="brand">MARKIN</div><div class="mod">${it.mod}</div>
+  ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${it.size}</div>
+  ${c?`<div class="bc">${barcode(c)}<div class="dig"><span>${c[0]}</span><span>${c.slice(1,7)}</span><span>${c.slice(7)}</span></div></div>`:''}
+  <div class="foot"><span>lotto ${it.lotto}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
+}
+function render(){
+  const slots=[];
+  items.forEach(it=>{
+    if(!slots.length&&it.start>1)for(let i=1;i<it.start;i++)slots.push(null);
+    for(let i=0;i<it.qty;i++)slots.push(it);
+  });
+  const pages=Math.max(1,Math.ceil(slots.length/6));
+  let h='';
+  for(let p=0;p<pages;p++){
+    h+=`<div class="sheet ${$('cut').checked?'cut':''}">`;
+    for(let i=0;i<6;i++)h+=label(slots[p*6+i]);
+    h+='</div>';
+  }
+  $('pages').innerHTML=h;
+  const n=items.reduce((t,x)=>t+x.qty,0);
+  $('meta').textContent=(pages>1?pages+' foi A4':'1 foaie A4')+' · '+n+' etichete';fit();
+  $('list').innerHTML=items.map((it,i)=>`<div class="it"><span><b>${it.art}</b> × ${it.qty}</span><span class="x" data-i="${i}">✕</span></div>`).join('');
+  const s=document.documentElement.style;
+  s.setProperty('--mt',$('mt').value+'mm');s.setProperty('--mx',$('mx').value+'mm');s.setProperty('--gap',$('gap').value+'mm');
+}
+
+$('q').oninput=()=>{$('art').value='';fill()};$('q').onfocus=fill;
+$('q').onkeydown=e=>{
+  if(!cur.length)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+cur.length)%cur.length;
+    [...$('sug').children].forEach((d,i)=>d.classList.toggle('on',i===sel))}
+  else if(e.key==='Enter'){e.preventDefault();choose(cur[Math.max(sel,0)])}
+  else if(e.key==='Escape')$('sug').style.display='none';
+};
+$('sug').onmousedown=e=>{const d=e.target.closest('div[data-i]');if(d){e.preventDefault();choose(cur[+d.dataset.i])}};
+document.addEventListener('click',e=>{if(!e.target.closest('#sw'))$('sug').style.display='none'});
+$('eansel').onchange=e=>{$('ean').value=e.target.value};
+$('ean').onfocus=e=>e.target.select();
+$('add').onclick=()=>{
+  const art=$('art').value||$('mod').value;
+  if(!$('mod').value)return alert('Alege un articol');
+  if(!full13($('ean').value)&&!confirm('EAN invalid/gol – continui fără cod de bare?'))return;
+  if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
+  items.push({art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
+    lotto:$('lotto').value,pcs:$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(6,Math.max(1,+$('start').value||1))});
+  $('start').value=1;render();
+};
+$('list').onclick=e=>{if(e.target.dataset.i!==undefined){items.splice(e.target.dataset.i,1);render()}};
+$('clear').onclick=()=>{items=[];render()};
+function fit(){const pv=$('preview'),z=Math.min(1,(pv.clientHeight-90)/1123,(pv.clientWidth-60)/794);$('pages').style.zoom=Math.max(.35,z)}
+addEventListener('resize',fit);
+$('print').onclick=()=>window.print();
+['mt','mx','gap','cut'].forEach(i=>$(i).oninput=render);
+render();load();
+</script>
+</body>
+</html>
