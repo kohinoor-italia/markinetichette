@@ -54,9 +54,9 @@ button.hot{background:var(--hot)}
 .lbl .mod{font-weight:700;font-size:10mm;line-height:1.15;margin-top:1mm}
 .lbl .sub{font-size:7mm;line-height:1.1}
 .lbl .size{font-weight:700;font-size:10mm;line-height:1.2;margin-top:1mm}
-.lbl .bc{position:relative;width:46mm;height:20mm;margin-top:3mm}
-.lbl .bc svg{position:absolute;left:4mm;top:0;width:42mm;height:19mm;display:block}
-.lbl .dig span{position:absolute;top:16.3mm;height:3.6mm;line-height:3.6mm;font-family:monospace;font-size:3.6mm;display:flex;justify-content:space-between}.lbl .dig i{font-style:normal}.lbl .dig .d0{left:0;width:3mm}.lbl .dig .d1{left:5.5mm;width:18.2mm}.lbl .dig .d2{left:26.2mm;width:18.2mm}
+.lbl .bc{position:relative;width:52mm;height:23mm;margin-top:3mm}
+.lbl .bc svg{position:absolute;left:4mm;top:0;width:48mm;height:22mm;display:block}
+.lbl .dig span{position:absolute;top:19.3mm;height:3.6mm;line-height:3.6mm;font-family:monospace;font-size:3.1mm;display:flex;justify-content:space-between}.lbl .dig i{font-style:normal}.lbl .dig .d0{left:0;width:3mm}.lbl .dig .d1{left:6mm;width:20.4mm}.lbl .dig .d2{left:29.8mm;width:20.4mm}
 .lbl .foot{display:flex;justify-content:space-between;width:100%;font-size:3.6mm;margin-top:1.5mm;padding:0 2mm}
 @media print{
  html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar{display:none}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
@@ -153,8 +153,8 @@ function barcode(c){
   let b='101',p=PAR[c[0]];
   for(let i=0;i<6;i++)b+=(p[i]==='L'?L:G)[c[i+1]];
   b+='01010';for(let i=7;i<13;i++)b+=R[c[i]];b+='101';
-  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1'){const g=i<3||(i>=45&&i<50)||i>=92;r+=`<rect x="${i}" y="0" width="1" height="${g?19:16}"/>`}
-  return `<svg viewBox="0 0 95 19" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
+  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1'){const g=i<3||(i>=45&&i<50)||i>=92;r+=`<rect x="${i}" y="0" width="1" height="${g?22:19}"/>`}
+  return `<svg viewBox="0 0 95 22" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
 }
 
 /* ---------- Etichete ---------- */
