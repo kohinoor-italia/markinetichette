@@ -227,7 +227,8 @@ function label(it){
   return `<div class="lbl"><div class="brand ${t==='markin'?'':t}">${brand}</div><div class="mod">${t==='inu'?'<span class="art">Art.</span> ':''}${it.mod}</div>
   ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${size}</div>
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
-  <div class="foot"><span>${it.lotto?'lotto '+it.lotto:''}</span><span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
+<div class="foot" style="${it.lotto?'':'justify-content:center'}">${it.lotto?`<span>lotto ${it.lotto}</span>`:''}<span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
+
 }
 function render(){
   const slots=[];
