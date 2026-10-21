@@ -5,44 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Generatore etichette A4</title>
 <style>
-:root{--paper:#fbfaf7;--ink:#1c1b19;--mut:#7a766e;--line:#e4e0d7;--navy:#1b2a4a;--hot:#d9480f;--desk:#2a2e35}
+:root{--paper:#f6f4ef;--card:#fff;--ink:#1c1b19;--mut:#7a766e;--line:#e6e2d9;--navy:#1b2a4a;--hot:#d9480f;--desk:#2a2e35}
 *{box-sizing:border-box}
-body{margin:0;font-family:"Segoe UI Variable Text","SF Pro Text","Segoe UI",system-ui,sans-serif;background:var(--desk);color:var(--ink);display:flex;height:100vh;overflow:hidden;font-size:14px}
-#panel{width:400px;flex:none;background:var(--paper);display:flex;flex-direction:column;height:100vh;box-shadow:6px 0 30px #0006;z-index:2}
-#panel .scroll{flex:1;overflow:auto;padding:4px 24px 20px}
-#panel header{padding:22px 24px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-#panel .logo{width:38px;height:38px;border-radius:9px;background:var(--navy);display:grid;place-items:center}
-#panel h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;line-height:1.1}
-#panel header small{color:var(--mut);font-size:12px}
-section{padding:18px 0 6px;border-bottom:1px solid var(--line)}
-section:last-child{border:0}
-h2{font-size:13px;font-weight:700;margin:0 0 10px;padding-left:9px;border-left:3px solid var(--hot);line-height:1.1}
-label{display:block;font-size:12px;color:var(--mut);margin:0 0 4px;font-weight:500}
-.f{margin-bottom:12px}
-input,select{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
-input:focus,select:focus{outline:0;border-color:var(--navy);box-shadow:0 0 0 3px #1b2a4a22}
-#q{padding-left:34px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237a766e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E") 11px 50%/16px no-repeat;font-size:15px}
+body{margin:0;font-family:"Segoe UI Variable Text","SF Pro Text","Segoe UI",system-ui,sans-serif;background:var(--desk);color:var(--ink);display:flex;height:100vh;overflow:hidden;font-size:13px}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Pannello laterale ---------- */
+#panel{width:340px;flex:none;background:var(--paper);display:flex;flex-direction:column;height:100vh;box-shadow:6px 0 30px #0006;z-index:2}
+#panel header{padding:14px 16px;display:flex;align-items:center;gap:11px;background:var(--navy);color:#fff}
+#panel .logo{width:34px;height:34px;border-radius:9px;background:#ffffff1f;display:grid;place-items:center}
+#panel h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+#panel header small{color:#ffffffa6;font-size:11px}
+#panel .scroll{flex:1;overflow:auto;padding:12px 12px 4px}
+#panel .scroll::-webkit-scrollbar{width:8px}
+#panel .scroll::-webkit-scrollbar-thumb{background:#cfcabf;border-radius:8px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px 4px;margin-bottom:10px}
+h2{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);margin:0 0 10px}
+h2 svg.i{width:15px;height:15px;color:var(--hot)}
+label{display:block;font-size:11px;color:var(--mut);margin:0 0 3px;font-weight:500}
+.f{margin-bottom:9px;min-width:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+input,select{font:inherit;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#faf9f6;color:var(--ink);transition:border-color .15s,box-shadow .15s,background .15s}
+input:focus,select:focus{outline:0;border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px #1b2a4a1f}
+#q{padding:9px 10px 9px 33px;background:#faf9f6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237a766e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E") 10px 50%/16px no-repeat;font-size:13.5px}
+#q:focus{background-color:#fff}
 #ean{font-family:Consolas,"SF Mono",monospace;letter-spacing:.06em}
-button{font:inherit;width:100%;padding:11px;border:0;border-radius:9px;background:var(--navy);color:#fff;cursor:pointer;font-weight:600;transition:transform .1s,filter .15s}
+button{font:inherit;display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px 11px;border:0;border-radius:9px;background:var(--navy);color:#fff;cursor:pointer;font-weight:600;transition:transform .1s,filter .15s}
 button:hover{filter:brightness(1.15)}button:active{transform:translateY(1px)}
-button.sec{background:#ece8df;color:var(--ink)}
+button.sec{background:#e9e5db;color:var(--ink)}
 button.hot{background:var(--hot)}
-.row{display:flex;gap:10px}.row>div{flex:1}
-.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);margin:2px 0 12px;cursor:pointer}
-.chk input{width:auto}
+button.add{margin-bottom:10px}
+
+/* toggle */
+.chk{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink);margin:2px 0 10px;cursor:pointer}
+.tg{appearance:none;-webkit-appearance:none;flex:none;width:32px;height:18px;padding:0;border:0;border-radius:99px;background:#d6d1c5;position:relative;cursor:pointer;transition:background .15s}
+.tg:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0004;transition:left .15s}
+.tg:checked{background:var(--hot)}.tg:checked:after{left:16px}
+.tg:focus{box-shadow:0 0 0 3px #d9480f33}
+
+/* suggerimenti */
 #sw{position:relative}
 #sug{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 30px #0003;max-height:300px;overflow:auto;z-index:10;display:none;margin-top:4px}
-#sug div{padding:9px 12px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:1px solid #f3f0e9}
+#sug div{padding:8px 11px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid #f3f0e9}
 #sug div:last-child{border:0}
-#sug div:hover,#sug div.on{background:#eef1f8}#sug small{display:block;color:var(--mut);font-size:12px;font-weight:400;margin-top:1px}
-#status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);margin:8px 0 12px}
+#sug div:hover,#sug div.on{background:#eef1f8}#sug small{display:block;color:var(--mut);font-size:11px;font-weight:400;margin-top:1px}
+#status{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);margin:7px 0 9px}
 #status:before{content:"";width:7px;height:7px;border-radius:50%;background:#2f9e44}
 #status.err{color:#c92a2a}#status.err:before{background:#c92a2a}
-#list{margin:12px 0 4px;display:flex;flex-direction:column;gap:6px}
-.it{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:13px}
-.it b{font-weight:700}.it span.x{cursor:pointer;color:var(--mut);padding:2px 7px;border-radius:5px}.it span.x:hover{background:#fde8e1;color:var(--hot)}
-.actions{padding:16px 24px 20px;border-top:1px solid var(--line);background:var(--paper);display:flex;gap:10px}
+
+/* lista articoli aggiunti */
+#list{display:flex;flex-direction:column;gap:5px}
+#list:not(:empty){margin-bottom:10px}
+.it{display:flex;justify-content:space-between;align-items:center;padding:5px 6px 5px 10px;background:#faf9f6;border:1px solid var(--line);border-radius:8px;font-size:12px}
+.it b{font-weight:700}.it em{font-style:normal;color:var(--mut);margin-left:4px}
+.it span.x{cursor:pointer;color:var(--mut);padding:4px;border-radius:6px;display:grid;place-items:center}
+.it span.x svg{width:14px;height:14px;pointer-events:none}
+.it span.x:hover{background:#fde8e1;color:var(--hot)}
+
+.actions{padding:10px 12px 12px;border-top:1px solid var(--line);background:var(--paper);display:flex;gap:8px}
 .actions .hot{flex:2}.actions .sec{flex:1}
+
+/* ---------- Anteprima ---------- */
 #preview{flex:1;overflow:auto;position:relative;background:radial-gradient(#ffffff14 1px,transparent 1.5px) 0 0/22px 22px,var(--desk)}
 #bar{position:sticky;top:0;z-index:3;display:flex;justify-content:center;padding:14px}
 #meta{background:#14161ad9;color:#e9e6df;backdrop-filter:blur(6px);padding:7px 16px;border-radius:999px;font-size:12.5px;border:1px solid #ffffff1f}
@@ -61,38 +86,66 @@ button.hot{background:var(--hot)}
 @media print{
  html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar{display:none}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
  .sheet{box-shadow:none;margin:0}@page{size:A4;margin:0}
+ .cut .lbl{border:0!important}
 }
 </style>
 </head>
 <body>
 <div id="panel">
- <header><div class="logo"><svg width="22" height="22" viewBox="0 0 24 24"fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M5 5v14M9 5v14M13 5v14M17 5v14M20 5v14" /></svg></div>
-  <div><h1>Generatore etichette</h1><small>Fogli A4 · 6 etichette per foglio</small></div></header>
+ <header>
+  <div class="logo"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M5 5v14M9 5v14M13 5v14M17 5v14M20 5v14"/></svg></div>
+  <div><h1>Generatore etichette</h1><small>Fogli A4 &middot; 6 etichette per foglio</small></div>
+ </header>
+
  <div class="scroll">
- <section><h2>Articolo</h2>
-  <div id="sw"><input id="q" placeholder="Cerca codice articolo, es. X210C503 o X220LGC503" autocomplete="off"><input type="hidden" id="art"><div id="sug"></div></div>
-  <div id="status">Caricamento…</div>
- </section>
- <section><h2>Etichetta</h2>
-  <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option></select></div>
-  <div class="row"><div class="f"><label>Modello</label><input id="mod"></div><div class="f"><label>Dimensione</label><input id="size"></div></div>
-  <div class="f"><label>Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
-  <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
-<div class="row"><div class="f"><label>Lotto</label><input id="lotto" value=""></div><div class="f"><label>Pz/confezione</label><input id="pcs" value="10"></div></div>
 
+  <div class="card">
+   <h2><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Articolo</h2>
+   <div id="sw"><input id="q" placeholder="Cerca codice articolo, es. X210C503" autocomplete="off"><input type="hidden" id="art"><div id="sug"></div></div>
+   <div id="status">Caricamento&hellip;</div>
+  </div>
 
- </section>
- <section><h2>Sul foglio</h2>
-  <div class="row"><div class="f"><label>N. etichette</label><input id="qty" type="number" min="1" value="6"></div><div class="f"><label>Parti dalla pos.</label><input id="start" type="number" min="1" max="6" value="1"></div></div>
-  <button id="add">Aggiungi al foglio</button>
-  <div id="list"></div>
- </section>
- <section><h2>Foglio A4 (mm)</h2>
-  <div class="row"><div class="f"><label>Sopra/sotto</label><input id="mt" type="number" value="8" step=".5"></div><div class="f"><label>Sinistra/destra</label><input id="mx" type="number" value="6" step=".5"></div><div class="f"><label>Spazio</label><input id="gap" type="number" value="3" step=".5"></div></div>
-  <label class="chk"><input type="checkbox" id="cut" checked> Mostra il contorno dell'etichetta (solo test)</label>
- </section>
+  <div class="card">
+   <h2><svg class="i" viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1"/></svg>Etichetta</h2>
+   <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option></select></div>
+   <div class="g2">
+    <div class="f"><label>Modello</label><input id="mod"></div>
+    <div class="f"><label>Dimensione</label><input id="size"></div>
+   </div>
+   <div class="f"><label>Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
+   <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
+   <div class="g2">
+    <div class="f"><label>Lotto</label><input id="lotto" value=""></div>
+    <div class="f"><label>Pz/confezione</label><input id="pcs" value="10"></div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg>Sul foglio</h2>
+   <div class="g2">
+    <div class="f"><label>N. etichette</label><input id="qty" type="number" min="1" value="6"></div>
+    <div class="f"><label>Parti dalla pos.</label><input id="start" type="number" min="1" max="6" value="1"></div>
+   </div>
+   <button class="add" id="add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Aggiungi al foglio</button>
+   <div id="list"></div>
+  </div>
+
+  <div class="card">
+   <h2><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Foglio A4 (mm)</h2>
+   <div class="g3">
+    <div class="f"><label>Sopra/sotto</label><input id="mt" type="number" value="8" step=".5"></div>
+    <div class="f"><label>Sin./destra</label><input id="mx" type="number" value="6" step=".5"></div>
+    <div class="f"><label>Spazio</label><input id="gap" type="number" value="3" step=".5"></div>
+   </div>
+   <label class="chk"><span>Mostra il contorno dell'etichetta (solo test)</span><input type="checkbox" class="tg" id="cut" checked></label>
+  </div>
+
  </div>
- <div class="actions"><button class="hot" id="print">Stampa</button><button class="sec" id="clear">Svuota</button></div>
+
+ <div class="actions">
+  <button class="hot" id="print"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Stampa</button>
+  <button class="sec" id="clear"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Svuota</button>
+ </div>
 </div>
 <div id="preview"><div id="bar"><div id="meta"></div></div><div id="pages"></div></div>
 
@@ -100,6 +153,7 @@ button.hot{background:var(--hot)}
 const SB_URL='https://fndjrfieitieqzafhyzz.supabase.co';
 const SB_KEY='sb_publishable_bHDKjiKAVHqW199ICw7i2g_O3olYMAr';
 const $=id=>document.getElementById(id);
+const ICON_X='<svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 let rows=[],items=[];
 const eanMem=JSON.parse(localStorage.getItem('eanMem')||'{}');
 
@@ -130,8 +184,8 @@ function parseDesc(art,raw,sizeBase){
   rest=rest.replace(/\b[A-Z]*\d{3,}[A-Z]?\d*\b/gi,' ')
            .replace(/\b\d+(?:[.,]\d+)*\b/g,' ')
            .replace(/SUPER\s*PERM(?:ANENTE|\.)?/gi,'SUPER PERMANENTE')
-           .replace(/\s[-–]+(?=\s)/g,' ').replace(/\s+/g,' ').replace(/^[\s.,\-]+|[\s.,\-]+$/g,'');
-  // misura mancante o troncata (la descrizione è tagliata a 40 caratteri): ricava dagli altri articoli dello stesso modello
+           .replace(/\s[-\u2013]+(?=\s)/g,' ').replace(/\s+/g,' ').replace(/^[\s.,\-]+|[\s.,\-]+$/g,'');
+  // misura mancante o troncata (la descrizione e tagliata a 40 caratteri): ricava dagli altri articoli dello stesso modello
   const known=sizeBase&&sizeBase[baseOf(mod)];
   if(known&&(!size||(full.length>=38&&known.startsWith(size))))size=known;
   return {mod,size,sub:rest};
@@ -157,7 +211,7 @@ async function load(){
       const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
       if(!r.ok)throw new Error(r.status+' '+await r.text());
       const part=await r.json();all.push(...part);
-      $('status').textContent='Caricamento… '+all.length;
+      $('status').textContent='Caricamento\u2026 '+all.length;
       if(part.length<1000)break;
     }
     const m={};
@@ -218,7 +272,7 @@ function barcode(c){
   return `<svg viewBox="0 0 95 22" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
 }
 
-/* ---------- Etichete ---------- */
+/* ---------- Etichette ---------- */
 function label(it){
   if(!it)return '<div class="lbl"></div>';
   const c=full13(it.ean);
@@ -228,7 +282,6 @@ function label(it){
   ${it.sub?`<div class="sub">${it.sub}</div>`:''}<div class="size">${size}</div>
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
 <div class="foot" style="${it.lotto?'':'justify-content:center'}">${it.lotto?`<span>lotto ${it.lotto}</span>`:''}<span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
-
 }
 function render(){
   const slots=[];
@@ -245,8 +298,8 @@ function render(){
   }
   $('pages').innerHTML=h;
   const n=items.reduce((t,x)=>t+x.qty,0);
-  $('meta').textContent=(pages>1?pages+' fogli A4':'1 foglio A4')+' · '+n+' etichette';fit();
-  $('list').innerHTML=items.map((it,i)=>`<div class="it"><span><b>${it.art}</b> × ${it.qty}</span><span class="x" data-i="${i}">✕</span></div>`).join('');
+  $('meta').textContent=(pages>1?pages+' fogli A4':'1 foglio A4')+' \u00b7 '+n+' etichette';fit();
+  $('list').innerHTML=items.map((it,i)=>`<div class="it"><span><b>${it.art}</b><em>\u00d7 ${it.qty}</em></span><span class="x" data-i="${i}">${ICON_X}</span></div>`).join('');
   const s=document.documentElement.style;
   s.setProperty('--mt',$('mt').value+'mm');s.setProperty('--mx',$('mx').value+'mm');s.setProperty('--gap',$('gap').value+'mm');
 }
@@ -267,14 +320,15 @@ $('ean').onfocus=e=>e.target.select();
 $('add').onclick=()=>{
   const art=$('art').value||$('mod').value;
   if(!$('mod').value)return alert('Scegli un articolo');
-  if(!full13($('ean').value)&&!confirm('EAN non valido o vuoto – continuare senza codice a barre?'))return;
+  if(!full13($('ean').value)&&!confirm('EAN non valido o vuoto - continuare senza codice a barre?'))return;
   if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
   items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
     lotto:$('lotto').value,pcs:$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(6,Math.max(1,+$('start').value||1))});
-  $('start').value=1;$('cut').checked=false;render();
+$('start').value=1;render();
+
 };
 
-$('list').onclick=e=>{if(e.target.dataset.i!==undefined){items.splice(e.target.dataset.i,1);render()}};
+$('list').onclick=e=>{const x=e.target.closest('.x');if(x){items.splice(+x.dataset.i,1);render()}};
 $('clear').onclick=()=>{items=[];render()};
 function fit(){const pv=$('preview'),z=Math.min(1,(pv.clientHeight-90)/1123,(pv.clientWidth-60)/794);$('pages').style.zoom=Math.max(.35,z)}
 addEventListener('resize',fit);
