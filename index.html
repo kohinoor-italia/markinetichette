@@ -247,7 +247,23 @@ function buildSizeBase(rows){
 }
 
 let sizeBase={};
-async function load(){
+const CK='artCache_v1',TTL=24*3600*1000;
+function useRows(list){
+  rows=list;sizeBase=buildSizeBase(rows);
+  $('status').classList.remove('err');
+  $('status').textContent=rows.length+' articoli X210 / X220';
+  fill();
+}
+async function load(force){
+  if(!force){
+    try{
+      const c=JSON.parse(localStorage.getItem(CK)||'null');
+      if(c&&c.rows&&c.rows.length){
+        useRows(c.rows);
+        if(Date.now()-c.t<TTL)return;
+      }
+    }catch(e){}
+  }
   try{
     const f='or=(codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
     const all=[];
@@ -255,7 +271,7 @@ async function load(){
       const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
       if(!r.ok)throw new Error(r.status+' '+await r.text());
       const part=await r.json();all.push(...part);
-      $('status').textContent='Caricamento\u2026 '+all.length;
+      if(!rows.length||force)$('status').textContent='Caricamento\u2026 '+all.length;
       if(part.length<1000)break;
     }
     const m={};
@@ -263,11 +279,15 @@ async function load(){
       const o=m[x.codice_articolo]||(m[x.codice_articolo]={codice_articolo:x.codice_articolo,descrizione:x.descrizione,eans:[]});
       if(/^\d{13}$/.test(x.codice||'')&&!o.eans.includes(x.codice))o.eans.push(x.codice);
     });
-    rows=Object.values(m);sizeBase=buildSizeBase(rows);
-    $('status').textContent=rows.length+' articoli X210 / X220';
-    fill();
-  }catch(e){$('status').classList.add('err');$('status').textContent='Errore Supabase: '+e.message}
+    const list=Object.values(m);
+    useRows(list);
+    try{localStorage.setItem(CK,JSON.stringify({t:Date.now(),rows:list}))}catch(e){}
+  }catch(e){
+    if(!rows.length){$('status').classList.add('err');$('status').textContent='Errore Supabase: '+e.message}
+  }
 }
+$('status').onclick=()=>load(true);
+
 let sel=-1,cur=[];
 function fill(){
   const q=$('q').value.trim().toLowerCase();
