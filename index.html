@@ -90,6 +90,16 @@ button.add{margin-bottom:10px}
 .lbl .dig span{position:absolute;top:13.8mm;height:5.6mm;line-height:5.6mm;font-family:monospace;font-size:4.8mm;display:flex;justify-content:space-between}.lbl .dig i{font-style:normal}.lbl .dig .d0{left:-1.5mm;width:5mm}.lbl .dig .d1{left:7mm;width:18.2mm}.lbl .dig .d2{left:30.3mm;width:18.6mm}
 .lbl .foot{display:flex;justify-content:space-between;width:100%;font-size:4.6mm;margin-top:1.5mm;padding:0 2mm}
 
+.sheet.s32{padding:0;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(8,1fr);column-gap:0}
+.lbl.x100{padding:0 1mm;font-family:Arial,Helvetica,sans-serif}
+.x100 .f1{font-weight:700;font-size:4.4mm;line-height:1.15;white-space:nowrap}
+.x100 .f2{font-size:3.6mm;line-height:1.15}
+.x100 .f3{font-weight:700;font-size:5.2mm;line-height:1.2}
+.x100 .bcx{width:38mm;margin-top:.6mm}
+.x100 .bcx svg{display:block;width:34.5mm;height:12.5mm;margin-left:3.6mm}
+.x100 .dg{font-size:4.4mm;line-height:1.1;white-space:pre;text-align:left;margin-top:.3mm}
+
+
 @media print{
 
  html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar{display:none}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
@@ -145,7 +155,7 @@ button.add{margin-bottom:10px}
 
   <div class="card">
    <h2><svg class="i" viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1"/></svg>Etichetta</h2>
-   <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option></select></div>
+   <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option><option value="x100">BUSTE ETICHETTE (X100…)</option></select></div>
    <div class="g2">
     <div class="f"><label>Modello</label><input id="mod"></div>
     <div class="f"><label>Dimensione</label><input id="size"></div>
@@ -162,7 +172,7 @@ button.add{margin-bottom:10px}
    <h2><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg>Sul foglio</h2>
    <div class="g2">
     <div class="f"><label>N. etichette</label><input id="qty" type="number" min="1" value="6"></div>
-    <div class="f"><label>Parti dalla pos.</label><input id="start" type="number" min="1" max="6" value="1"></div>
+    <div class="f"><label>Parti dalla pos.</label><input id="start" type="number" min="1" max="32" value="1"></div>
    </div>
    <button class="add" id="add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Aggiungi al foglio</button>
    <div id="list"></div>
@@ -247,11 +257,11 @@ function buildSizeBase(rows){
 }
 
 let sizeBase={};
-const CK='artCache_v1',TTL=24*3600*1000;
+const CK='artCache_v2',TTL=24*3600*1000;
 function useRows(list){
   rows=list;sizeBase=buildSizeBase(rows);
   $('status').classList.remove('err');
-  $('status').textContent=rows.length+' articoli X210 / X220';
+  $('status').textContent=rows.length+' articoli X100 / X210 / X220';
   fill();
 }
 async function load(force){
@@ -265,7 +275,7 @@ async function load(force){
     }catch(e){}
   }
   try{
-    const f='or=(codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
+const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
     const all=[];
     for(let off=0;;off+=1000){
       const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
@@ -300,21 +310,34 @@ function fill(){
 }
 
 function choose(r){$('art').value=r.codice_articolo;$('q').value=r.codice_articolo;$('sug').style.display='none';pick()}
+function sizeX100(d){
+  d=d||'';
+  let m=d.match(/(\d+(?:[.,]\d+)?)\s*X\s*(\d+(?:[.,]\d+)?)/i);
+  if(m)return m[1]+'x'+m[2];
+  m=d.match(/DM\.?\s*(\d+(?:[.,]\d+)?)/i);
+  return m?'Ø '+m[1]:'';
+}
 function fillFields(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
   const p=parseDesc(r.codice_articolo,r.descrizione,sizeBase),t=$('tpl').value;
-  let mod=p.mod,sub=p.sub;
+  let mod=p.mod,sub=p.sub,sz=p.size;
   if(t==='inu'){const n=(r.descrizione||'').match(/(?:^|[\s+*])X(\d{4,6})(?=[\s\-]|$)/i);if(n)mod=n[1];sub=''}
   if(t==='top')sub=sub.replace(/TOP\s*QUALITY/i,'').replace(/\s+/g,' ').trim();
-  $('mod').value=mod;$('size').value=p.size;$('sub').value=sub;
+  if(t==='x100'){mod=r.codice_articolo;sz=sizeX100(r.descrizione);sub=''}
+  $('mod').value=mod;$('size').value=sz;$('sub').value=sub;
+  $('pcs').value=t==='x100'?'1.500':'10';
+  $('qty').value=t==='x100'?32:6;
 }
+
 $('tpl').onchange=fillFields;
 function pick(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
-  $('tpl').value=/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
-  fillFields();$('pcs').value='10';
+$('tpl').value=/^X100/i.test(r.codice_articolo)?'x100':/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
+fillFields();
+
   $('eans').innerHTML=[...new Set([...r.eans,...Object.values(eanMem)])].map(e=>`<option value="${e}">`).join('');
-  $('ean').value=eanMem[r.codice_articolo]||r.eans[0]||'';
+$('ean').value=eanMem[r.codice_articolo]||(r.codice_articolo.startsWith('X100')&&r.eans.find(e=>e.startsWith('80070479')))||r.eans[0]||'';
+
   const sl=$('eansel');sl.style.display=r.eans.length>1?'block':'none';
   sl.innerHTML=r.eans.map(e=>`<option ${e===$('ean').value?'selected':''}>${e}</option>`).join('');
 }
@@ -339,6 +362,11 @@ function barcode(c){
 /* ---------- Etichette ---------- */
 function label(it){
   if(!it)return '<div class="lbl"></div>';
+  if(it.tpl==='x100'){
+  const c=full13(it.ean);
+  return `<div class="lbl x100">${it.size?`<div class="f1">Formato ${it.size} mm.</div>`:''}${it.pcs?`<div class="f2">${it.pcs} ETICHETTE</div>`:''}<div class="f3">Cod. ${it.mod}</div>${c?`<div class="bcx">${barcode(c)}<div class="dg">${c[0]} ${c.slice(1,7)}  ${c.slice(7)}</div></div>`:''}</div>`;
+}
+
   const c=full13(it.ean);
   const t=it.tpl||'markin',brand={markin:'MARKIN',inu:'INLINEA',top:'TOP QUALITY'}[t];
   const size=t==='markin'?it.size:it.size.replace(/(\d)X(?=\d)/g,'$1x');
@@ -348,18 +376,22 @@ function label(it){
 <div class="foot" style="${it.lotto?'':'justify-content:center'}">${it.lotto?`<span>lotto ${it.lotto}</span>`:''}<span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
 function render(){
+function sheetsHtml(list,per,cls){
   const slots=[];
-  items.forEach(it=>{
-    if(!slots.length&&it.start>1)for(let i=1;i<it.start;i++)slots.push(null);
+  list.forEach(it=>{
+    if(!slots.length&&it.start>1)for(let i=1;i<Math.min(it.start,per+1);i++)slots.push(null);
     for(let i=0;i<it.qty;i++)slots.push(it);
   });
-  const pages=Math.max(1,Math.ceil(slots.length/6));
+  const pages=Math.max(1,Math.ceil(slots.length/per));
   let h='';
   for(let p=0;p<pages;p++){
-    h+=`<div class="sheet ${$('cut').checked?'cut':''}">`;
-    for(let i=0;i<6;i++)h+=label(slots[p*6+i]);
+    h+=`<div class="sheet ${$('cut').checked?'cut':''} ${cls}">`;
+    for(let i=0;i<per;i++)h+=label(slots[p*per+i]);
     h+='</div>';
   }
+  return {h,pages};
+}
+
   $('pages').innerHTML=h;
   const n=items.reduce((t,x)=>t+x.qty,0);
   $('meta').textContent=(pages>1?pages+' fogli A4':'1 foglio A4')+' \u00b7 '+n+' etichette';$('tn').textContent=n;fit();
