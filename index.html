@@ -144,7 +144,12 @@ details .g3{margin-top:10px}
 .x110 .cd{position:absolute;left:0;width:35.4mm;top:calc(2.92mm - .49em);text-align:center;font-weight:700;line-height:1;white-space:nowrap}
 .x110 .b2{position:absolute;left:7.62mm;top:5.84mm;width:20.07mm;height:5.42mm}
 .x110 .b2 svg{display:block;width:100%;height:100%}
-.x110 .dg2 span{position:absolute;top:12.48mm;font-size:2.44mm;line-height:1;white-space:pre}
+.x110 .dg2{position:absolute;left:7.62mm;top:11.5mm;width:20.07mm;height:3.4mm}
+.x110 .dg2 svg{display:block;width:100%;height:100%;overflow:visible}
+.x110 .dg2 text{font-family:Arial,Helvetica,"Liberation Sans",sans-serif;fill:#000;stroke:#000;stroke-width:.07px;text-anchor:middle}
+
+
+
 
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:.3s cubic-bezier(.3,1.4,.5,1);z-index:50;box-shadow:0 10px 30px #0006}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -479,12 +484,20 @@ function barcode2(c){
 }
 
 /* ---------- Etichette ---------- */
+function dg(c){
+  const m=20.07/95,t=(x,ch)=>`<text transform="translate(${x.toFixed(3)} 2.8) scale(.82 1.15)" font-size="2.4">${ch}</text>`;
+  let s=t(-1.6,c[0]);
+  for(let i=0;i<6;i++)s+=t((3+7*i+3.5)*m,c[1+i]);
+  for(let i=0;i<6;i++)s+=t((50+7*i+3.5)*m,c[7+i]);
+  return s;
+}
+
 function label(it){
   if(!it)return '<div class="lbl"></div>';
   if(it.tpl==='x110'){
     const c=full13(it.ean);
-    const fs=Math.min(3.46,32/(Math.max((it.mod||'').length,1)*.62)).toFixed(2);
-    return `<div class="lbl x110"><div class="in"><div class="cd" style="font-size:${fs}mm">${it.mod}</div>${c?`<div class="b2">${barcode2(c)}</div><div class="dg2"><span style="left:5.6mm">${c[0]}</span><span style="left:7.7mm">${c.slice(1,7)}</span><span style="left:17.7mm">${c.slice(7)}</span></div>`:''}</div></div>`;
+    const fs=Math.min(3.8,31/(Math.max((it.mod||'').length,1)*.62)).toFixed(2);
+    return `<div class="lbl x110"><div class="in"><div class="cd" style="font-size:${fs}mm">${it.mod}</div>${c?`<div class="b2">${barcode2(c)}</div><div class="dg2"><svg viewBox="0 0 20.07 3.4">${dg(c)}</svg></div>`:''}</div></div>`;
   }
   if(it.tpl==='x100'){
     const c=full13(it.ean);
