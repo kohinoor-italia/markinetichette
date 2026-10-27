@@ -136,6 +136,16 @@ details .g3{margin-top:10px}
 .x100 .bcx svg{display:block;width:34.5mm;height:12.5mm;margin-left:3.6mm}
 .x100 .dg{font-size:3.9mm;line-height:1.1;white-space:pre;text-align:left;margin-top:.3mm}
 
+/* ---- X110: 12 x 8 = 96 etichette, cella 16.3 x 35.4 mm, testo ruotato ---- */
+.sheet.s96{padding:var(--mt96) var(--mx96);grid-template-columns:repeat(12,16.3mm);grid-template-rows:repeat(8,35.4mm);column-gap:var(--gap96);row-gap:0;justify-content:start;align-content:start}
+.lbl.x110{position:relative;display:block;width:16.3mm;height:35.4mm;padding:0;overflow:hidden;font-family:Arial,Helvetica,"Liberation Sans",sans-serif;color:#000;text-align:left}
+.cut .lbl.x110{border:0;border-radius:0;outline:.2mm solid #777;outline-offset:-.2mm}
+.x110 .in{position:absolute;left:0;top:0;width:35.4mm;height:16.3mm;transform-origin:0 0;transform:translate(0,35.4mm) rotate(-90deg)}
+.x110 .cd{position:absolute;left:0;width:35.4mm;top:calc(2.92mm - .49em);text-align:center;font-weight:700;line-height:1;white-space:nowrap}
+.x110 .b2{position:absolute;left:7.62mm;top:5.84mm;width:20.07mm;height:5.42mm}
+.x110 .b2 svg{display:block;width:100%;height:100%}
+.x110 .dg2 span{position:absolute;top:12.48mm;font-size:2.44mm;line-height:1;white-space:pre}
+
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:.3s cubic-bezier(.3,1.4,.5,1);z-index:50;box-shadow:0 10px 30px #0006}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #toast svg{color:#34d399}
@@ -146,6 +156,7 @@ details .g3{margin-top:10px}
  html,body{height:auto;overflow:visible}body{display:block;background:#fff}#panel,#bar,#toast,#empty{display:none!important}#preview{padding:0;overflow:visible;background:none}#pages{padding:0;zoom:1!important}
  .sheet{box-shadow:none;margin:0}@page{size:A4;margin:0}
  .cut .lbl{border:0!important}
+ .cut .lbl.x110{outline:0!important}
 }
 #tabs{display:none}
 #tn{background:var(--hot);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px;margin-left:4px}
@@ -192,18 +203,19 @@ details .g3{margin-top:10px}
 
   <div class="card">
    <h2><b>2</b>Etichetta</h2>
-   <select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option><option value="x100">BUSTE ETICHETTE (X100…)</option></select>
+   <select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option><option value="x100">BUSTE ETICHETTE (X100…)</option><option value="x110">BUSTE X110 (96 per foglio)</option></select>
    <div class="chips" id="chips">
     <button type="button" class="chip" data-v="markin"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span>MARKIN<small>Standard</small></span></button>
     <button type="button" class="chip" data-v="inu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></svg><span>INLINEA<small>Articoli INU</small></span></button>
     <button type="button" class="chip" data-v="top"><svg class="i" viewBox="0 0 24 24"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.5 14l-1 7 4.5-2.5 4.5 2.5-1-7"/></svg><span>TOP QUALITY<small>Premium</small></span></button>
     <button type="button" class="chip" data-v="x100"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>BUSTE X100<small>32 per foglio</small></span></button>
+    <button type="button" class="chip" data-v="x110" style="grid-column:1/-1"><svg class="i" viewBox="0 0 24 24"><path d="M3 4h4v16H3zM10 4h4v16h-4zM17 4h4v16h-4z"/></svg><span>BUSTE X110<small>96 per foglio (12 &times; 8)</small></span></button>
    </div>
-   <div class="g2">
+   <div class="g2" id="gms">
     <div class="f"><label id="lmod">Modello</label><input id="mod"></div>
-    <div class="f"><label>Dimensione</label><input id="size"></div>
+    <div class="f" id="fsize"><label>Dimensione</label><input id="size"></div>
    </div>
-   <div class="f"><label id="lsub">Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
+   <div class="f" id="fsub"><label id="lsub">Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
    <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:7px"></select></div>
    <div class="g2" id="lp">
     <div class="f"><label>Lotto</label><input id="lotto" value=""></div>
@@ -215,16 +227,16 @@ details .g3{margin-top:10px}
    <h2><b>3</b>Sul foglio</h2>
    <div class="g2">
     <div class="f"><label>Quante etichette</label><div class="st"><button type="button" data-t="qty" data-d="-1">&minus;</button><input id="qty" type="number" min="1" value="6"><button type="button" data-t="qty" data-d="1">+</button></div></div>
-    <div class="f"><label>Parti dalla posizione</label><div class="st"><button type="button" data-t="start" data-d="-1">&minus;</button><input id="start" type="number" min="1" max="32" value="1"><button type="button" data-t="start" data-d="1">+</button></div></div>
+    <div class="f"><label>Parti dalla posizione</label><div class="st"><button type="button" data-t="start" data-d="-1">&minus;</button><input id="start" type="number" min="1" max="96" value="1"><button type="button" data-t="start" data-d="1">+</button></div></div>
    </div>
    <div class="row"><button type="button" class="link" id="full"><svg class="i" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 12h18M12 3v18"/></svg>Riempi il foglio</button></div>
    <button class="add" id="add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Aggiungi al foglio</button>
    <div id="list"></div>
    <details><summary><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>Margini del foglio (mm)</summary>
     <div class="g3">
-     <div class="f"><label>Sopra/sotto</label><input id="mt" type="number" value="8" step=".5"></div>
-     <div class="f"><label>Sin./destra</label><input id="mx" type="number" value="6" step=".5"></div>
-     <div class="f"><label>Spazio</label><input id="gap" type="number" value="3" step=".5"></div>
+     <div class="f"><label>Sopra/sotto</label><input id="mt" type="number" value="8" step=".1"></div>
+     <div class="f"><label>Sin./destra</label><input id="mx" type="number" value="6" step=".1"></div>
+     <div class="f"><label>Spazio</label><input id="gap" type="number" value="3" step=".1"></div>
     </div>
     <label class="chk"><span>Mostra il contorno (solo per test)</span><input type="checkbox" class="tg" id="cut" checked></label>
    </details>
@@ -276,22 +288,31 @@ function cntX100(r){
 }
 
 /* ---------- Impostazioni foglio per formato ---------- */
+const PER={x100:32,x110:96};
 const geo={
   std:{mt:8,mx:6,gap:3,cut:true},
-  x100:{mt:8.4,mx:5.45,gap:3,cut:true}
+  x100:{mt:8.4,mx:5.45,gap:3,cut:true},
+  x110:{mt:6.9,mx:7.2,gap:0,cut:true}
 };
-const isX=()=>$('tpl').value==='x100';
-const gk=()=>isX()?'x100':'std';
+const fm=()=>$('tpl').value;
+const isX=()=>fm()==='x100';
+const isY=()=>fm()==='x110';
+const per=()=>PER[fm()]||6;
+const gk=()=>isX()?'x100':isY()?'x110':'std';
 function geoToInputs(){const g=geo[gk()];$('mt').value=g.mt;$('mx').value=g.mx;$('gap').value=g.gap;$('cut').checked=g.cut}
 function inputsToGeo(){const g=geo[gk()];g.mt=+$('mt').value||0;g.mx=+$('mx').value||0;g.gap=+$('gap').value||0;g.cut=$('cut').checked}
 function applyFmt(){
-  const x=isX();
-  $('lp').style.display=x?'none':'';
-  if(applyFmt.last!==x){applyFmt.last=x;$('qty').value=x?32:6;$('start').value=1}
+  const x=isX(),y=isY(),sp=x||y;
+  $('lp').style.display=sp?'none':'';
+  $('fsize').style.display=y?'none':'';
+  $('fsub').style.display=y?'none':'';
+  $('gms').style.gridTemplateColumns=y?'1fr':'';
+  if(applyFmt.last!==gk()){applyFmt.last=gk();$('qty').value=per();$('start').value=1}
   $('lsub').textContent=x?'Riga 2 (es. 1.500 ETICHETTE)':'Riga 2 (es. SUPER PERMANENTE)';
-  $('lmod').textContent=x?'Codice':'Modello';
+  $('lmod').textContent=sp?'Codice':'Modello';
   $('sub').placeholder=x?'es. 1.500 ETICHETTE':'';
-  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===$('tpl').value));
+  $('start').max=per();
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===fm()));
   geoToInputs();
 }
 
@@ -340,7 +361,7 @@ function buildSizeBase(rows){
 }
 
 let sizeBase={};
-const CK='artCache_v2',TTL=24*3600*1000;
+const CK='artCache_v3',TTL=24*3600*1000;
 function useRows(list){
   rows=list;sizeBase=buildSizeBase(rows);
   $('status').classList.remove('err');
@@ -358,7 +379,7 @@ async function load(force){
     }catch(e){}
   }
   try{
-    const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
+    const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X110*,codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
     const all=[];
     for(let off=0;;off+=1000){
       const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
@@ -404,21 +425,23 @@ function fillFields(){
   applyFmt();
   const r=rows.find(x=>x.codice_articolo===$('art').value);
   if(!r){render();return}
-  const p=parseDesc(r.codice_articolo,r.descrizione,sizeBase),t=$('tpl').value;
+  const p=parseDesc(r.codice_articolo,r.descrizione,sizeBase),t=fm();
   let mod=p.mod,sub=p.sub,sz=p.size;
   if(t==='inu'){const n=(r.descrizione||'').match(/(?:^|[\s+*])X(\d{4,6})(?=[\s\-]|$)/i);if(n)mod=n[1];sub=''}
   if(t==='top')sub=sub.replace(/TOP\s*QUALITY/i,'').replace(/\s+/g,' ').trim();
   if(t==='x100'){mod=r.codice_articolo;sz=sizeX100(r.descrizione);sub=cntX100(r)}
+  if(t==='x110'){mod=r.codice_articolo;sz='';sub=''}
   $('mod').value=mod;$('size').value=sz;$('sub').value=sub;
-  if(t!=='x100')$('pcs').value='10';
-  $('qty').value=t==='x100'?32:6;
+  if(t!=='x100'&&t!=='x110')$('pcs').value='10';
+  $('qty').value=per();
   render();
 }
 $('tpl').onchange=fillFields;
 $('chips').onclick=e=>{const c=e.target.closest('.chip');if(c){$('tpl').value=c.dataset.v;fillFields()}};
 function pick(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
-  $('tpl').value=/^X100/i.test(r.codice_articolo)?'x100':/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
+  const a=r.codice_articolo;
+  $('tpl').value=/^X110/i.test(a)?'x110':/^X100/i.test(a)?'x100':/^X2\d0INU/i.test(a)?'inu':/^X2\d0TOP/i.test(a)?'top':'markin';
   fillFields();
   const eans=r.eans.filter(e=>!e.startsWith('9'));
   $('eans').innerHTML=eans.map(e=>`<option value="${e}">`).join('');
@@ -437,17 +460,32 @@ function full13(s){
   s=s.replace(/\D/g,'');if(s.length===12){let t=0;for(let i=0;i<12;i++)t+=+s[i]*(i%2?3:1);s+=(10-t%10)%10}
   return s.length===13?s:null;
 }
-function barcode(c){
+function bits(c){
   let b='101',p=PAR[c[0]];
   for(let i=0;i<6;i++)b+=(p[i]==='L'?L:G)[c[i+1]];
   b+='01010';for(let i=7;i<13;i++)b+=R[c[i]];b+='101';
+  return b;
+}
+function barcode(c){
+  const b=bits(c);
   let r='';for(let i=0;i<b.length;i++)if(b[i]==='1'){const g=i<3||(i>=45&&i<50)||i>=92;r+=`<rect x="${i}" y="0" width="1" height="${g?22:19}"/>`}
+  return `<svg viewBox="0 0 95 22" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
+}
+/* variante X110: barre normali 4.9mm (inizio a 0.17mm), barre di guardia 5.42mm */
+function barcode2(c){
+  const b=bits(c);
+  let r='';for(let i=0;i<b.length;i++)if(b[i]==='1'){const g=i<3||(i>=45&&i<50)||i>=92;r+=g?`<rect x="${i}" y="0" width="1" height="22"/>`:`<rect x="${i}" y=".7" width="1" height="19.9"/>`}
   return `<svg viewBox="0 0 95 22" preserveAspectRatio="none" shape-rendering="crispEdges">${r}</svg>`;
 }
 
 /* ---------- Etichette ---------- */
 function label(it){
   if(!it)return '<div class="lbl"></div>';
+  if(it.tpl==='x110'){
+    const c=full13(it.ean);
+    const fs=Math.min(3.46,32/(Math.max((it.mod||'').length,1)*.62)).toFixed(2);
+    return `<div class="lbl x110"><div class="in"><div class="cd" style="font-size:${fs}mm">${it.mod}</div>${c?`<div class="b2">${barcode2(c)}</div><div class="dg2"><span style="left:5.6mm">${c[0]}</span><span style="left:7.7mm">${c.slice(1,7)}</span><span style="left:17.7mm">${c.slice(7)}</span></div>`:''}</div></div>`;
+  }
   if(it.tpl==='x100'){
     const c=full13(it.ean);
     return `<div class="lbl x100">${it.size?`<div class="f1">Formato ${it.size} mm.</div>`:''}${it.sub?`<div class="f2">${it.sub}</div>`:''}<div class="f3">Cod. ${it.mod}</div>${c?`<div class="bcx">${barcode(c)}<div class="dg">${c[0]} ${c.slice(1,7)}  ${c.slice(7)}</div></div>`:''}</div>`;
@@ -460,14 +498,14 @@ function label(it){
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
 <div class="foot" style="${it.lotto?'':'justify-content:center'}">${it.lotto?`<span>lotto ${it.lotto}</span>`:''}<span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
-function sheetsHtml(list,per,cls){
+function sheetsHtml(list,per,cls,key){
   const slots=[];
   list.forEach(it=>{
     if(!slots.length&&it.start>1)for(let i=1;i<Math.min(it.start,per+1);i++)slots.push(null);
     for(let i=0;i<it.qty;i++)slots.push(it);
   });
   const pages=Math.max(1,Math.ceil(slots.length/per));
-  const cut=geo[cls?'x100':'std'].cut;
+  const cut=geo[key].cut;
   let h='';
   for(let p=0;p<pages;p++){
     h+=`<div class="sheet ${cut?'cut':''} ${cls}">`;
@@ -477,26 +515,35 @@ function sheetsHtml(list,per,cls){
   return {h,pages};
 }
 function draft(){
-  const x=isX();
-  return {tpl:$('tpl').value,art:$('art').value||$('mod').value,mod:$('mod').value,size:$('size').value,
+  const x=isX(),sp=x||isY();
+  return {tpl:fm(),art:$('art').value||$('mod').value,mod:$('mod').value,size:$('size').value,
     sub:x?normCnt($('sub').value):$('sub').value,ean:$('ean').value,
-    lotto:x?'':$('lotto').value,pcs:x?'':$('pcs').value,
-    qty:Math.max(1,+$('qty').value||1),start:Math.min(x?32:6,Math.max(1,+$('start').value||1))};
+    lotto:sp?'':$('lotto').value,pcs:sp?'':$('pcs').value,
+    qty:Math.max(1,+$('qty').value||1),start:Math.min(per(),Math.max(1,+$('start').value||1))};
 }
 function render(){
-  const x=isX();
+  const t=fm();
   const D=$('mod').value?[draft()]:[];
-  const A=items.filter(i=>i.tpl!=='x100').concat(x?[]:D),B=items.filter(i=>i.tpl==='x100').concat(x?D:[]);
+  const all=items.concat(D);
+  const A=all.filter(i=>i.tpl!=='x100'&&i.tpl!=='x110'),B=all.filter(i=>i.tpl==='x100'),C=all.filter(i=>i.tpl==='x110');
   let h='',pages=0;
-  if(A.length||(!x&&!B.length)){const r=sheetsHtml(A,6,'');h+=r.h;pages+=r.pages}
-  if(B.length||x){const r=sheetsHtml(B,32,'s32');h+=r.h;pages+=r.pages}
+  const add=(l,p,c,k)=>{const r=sheetsHtml(l,p,c,k);h+=r.h;pages+=r.pages};
+  if(A.length)add(A,6,'','std');
+  if(B.length)add(B,32,'s32','x100');
+  if(C.length)add(C,96,'s96','x110');
+  if(!pages){
+    if(t==='x100')add([],32,'s32','x100');
+    else if(t==='x110')add([],96,'s96','x110');
+    else add([],6,'','std');
+  }
   $('pages').innerHTML=h;
-    const n=A.concat(B).reduce((t,v)=>t+v.qty,0);
+  const n=all.reduce((s,v)=>s+v.qty,0);
   $('meta').textContent=(pages>1?pages+' fogli A4':'1 foglio A4')+' \u00b7 '+n+' etichette';$('tn').textContent=n;fit();
   $('list').innerHTML=items.map((it,i)=>`<div class="it"><span><b>${it.art}</b> <em>\u00d7${it.qty}</em></span><span class="x" data-i="${i}">${ICON_X}</span></div>`).join('');
   const s=document.documentElement.style;
   s.setProperty('--mt',geo.std.mt+'mm');s.setProperty('--mx',geo.std.mx+'mm');s.setProperty('--gap',geo.std.gap+'mm');
   s.setProperty('--mt32',geo.x100.mt+'mm');s.setProperty('--mx32',geo.x100.mx+'mm');s.setProperty('--gap32',geo.x100.gap+'mm');
+  s.setProperty('--mt96',geo.x110.mt+'mm');s.setProperty('--mx96',geo.x110.mx+'mm');s.setProperty('--gap96',geo.x110.gap+'mm');
 }
 
 $('q').oninput=()=>{$('art').value='';fill()};
@@ -519,8 +566,8 @@ document.querySelectorAll('.st button').forEach(b=>b.onclick=()=>{
   i.dispatchEvent(new Event('input'));
 });
 $('full').onclick=()=>{
-  const per=isX()?32:6,s=Math.min(per,Math.max(1,+$('start').value||1));
-  $('qty').value=per-s+1;render();
+  const p=per(),s=Math.min(p,Math.max(1,+$('start').value||1));
+  $('qty').value=p-s+1;render();
 };
 
 $('add').onclick=()=>{
@@ -528,12 +575,12 @@ $('add').onclick=()=>{
   if(!$('mod').value)return toast('Scegli prima un articolo');
   if(!full13($('ean').value))return toast('Scegli un EAN valido');
   if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
-  const x=isX();
-  items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:x?normCnt($('sub').value):$('sub').value,ean:$('ean').value,
-    lotto:x?'':$('lotto').value,pcs:x?'':$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(x?32:6,Math.max(1,+$('start').value||1))});
+  const x=isX(),sp=x||isY();
+  items.push({tpl:fm(),art,mod:$('mod').value,size:$('size').value,sub:x?normCnt($('sub').value):$('sub').value,ean:$('ean').value,
+    lotto:sp?'':$('lotto').value,pcs:sp?'':$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(per(),Math.max(1,+$('start').value||1))});
   $('start').value=1;
   ['q','art','mod','size','sub','ean'].forEach(i=>$(i).value='');
-  $('eansel').style.display='none';$('sug').style.display='none';$('qty').value=x?32:6;
+  $('eansel').style.display='none';$('sug').style.display='none';$('qty').value=per();
   render();toast('Aggiunto al foglio');$('q').focus();
 };
 
