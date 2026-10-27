@@ -90,15 +90,15 @@ button.add{margin-bottom:10px}
 .lbl .dig span{position:absolute;top:13.8mm;height:5.6mm;line-height:5.6mm;font-family:monospace;font-size:4.8mm;display:flex;justify-content:space-between}.lbl .dig i{font-style:normal}.lbl .dig .d0{left:-1.5mm;width:5mm}.lbl .dig .d1{left:7mm;width:18.2mm}.lbl .dig .d2{left:30.3mm;width:18.6mm}
 .lbl .foot{display:flex;justify-content:space-between;width:100%;font-size:4.6mm;margin-top:1.5mm;padding:0 2mm}
 
-.sheet.s32{padding:0;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(8,1fr);column-gap:0}
+/* ---------- Formato X100: 4 x 8 (modello A407, celle 47,5 x 35 mm) ---------- */
+.sheet.s32{padding:var(--mt32) var(--mx32);grid-template-columns:repeat(4,47.5mm);grid-template-rows:repeat(8,35mm);column-gap:var(--gap32);row-gap:0;justify-content:start;align-content:start}
 .lbl.x100{padding:0 1mm;font-family:Arial,Helvetica,sans-serif}
-.x100 .f1{font-weight:700;font-size:4.4mm;line-height:1.15;white-space:nowrap}
-.x100 .f2{font-size:3.6mm;line-height:1.15}
-.x100 .f3{font-weight:700;font-size:5.2mm;line-height:1.2}
-.x100 .bcx{width:38mm;margin-top:.6mm}
+.x100 .f1{font-weight:700;font-size:4mm;line-height:1.15;white-space:nowrap}
+.x100 .f2{font-size:3.3mm;line-height:1.15;white-space:nowrap}
+.x100 .f3{font-weight:700;font-size:5.1mm;line-height:1.2;white-space:nowrap}
+.x100 .bcx{width:38mm;margin-top:.5mm}
 .x100 .bcx svg{display:block;width:34.5mm;height:12.5mm;margin-left:3.6mm}
-.x100 .dg{font-size:4.4mm;line-height:1.1;white-space:pre;text-align:left;margin-top:.3mm}
-
+.x100 .dg{font-size:3.9mm;line-height:1.1;white-space:pre;text-align:left;margin-top:.3mm}
 
 @media print{
 
@@ -142,7 +142,7 @@ button.add{margin-bottom:10px}
 <div id="panel">
  <header>
   <div class="logo"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M5 5v14M9 5v14M13 5v14M17 5v14M20 5v14"/></svg></div>
-  <div><h1>Generatore etichette</h1><small>Fogli A4 &middot; 6 etichette per foglio</small></div>
+  <div><h1>Generatore etichette</h1><small>Fogli A4</small></div>
  </header>
 
  <div class="scroll">
@@ -157,18 +157,18 @@ button.add{margin-bottom:10px}
    <h2><svg class="i" viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1"/></svg>Etichetta</h2>
    <div class="f"><label>Formato</label><select id="tpl"><option value="markin">MARKIN</option><option value="inu">INLINEA (articoli INU)</option><option value="top">TOP QUALITY</option><option value="x100">BUSTE ETICHETTE (X100…)</option></select></div>
    <div class="g2">
-    <div class="f"><label>Modello</label><input id="mod"></div>
+    <div class="f"><label id="lmod">Modello</label><input id="mod"></div>
     <div class="f"><label>Dimensione</label><input id="size"></div>
    </div>
-   <div class="f"><label>Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
+   <div class="f"><label id="lsub">Riga 2 (es. SUPER PERMANENTE)</label><input id="sub"></div>
    <div class="f"><label>EAN-13</label><input id="ean" list="eans" inputmode="numeric" maxlength="13" placeholder="scegli dalla lista o scrivi"><datalist id="eans"></datalist><select id="eansel" style="display:none;margin-top:6px"></select></div>
-   <div class="g2">
+   <div class="g2" id="lp">
     <div class="f"><label>Lotto</label><input id="lotto" value=""></div>
     <div class="f"><label>Pz/confezione</label><input id="pcs" value="10"></div>
    </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="cardfoglio">
    <h2><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg>Sul foglio</h2>
    <div class="g2">
     <div class="f"><label>N. etichette</label><input id="qty" type="number" min="1" value="6"></div>
@@ -210,6 +210,45 @@ const $=id=>document.getElementById(id);
 const ICON_X='<svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 let rows=[],items=[];
 const eanMem=JSON.parse(localStorage.getItem('eanMem')||'{}');
+
+/* ---------- Numero etichette per busta (X100) ---------- */
+/* Tabella per formato: chiave = le 2 cifre dopo X100 (es. X10048 -> 48). Completala con i numeri giusti. */
+const CNT_X100={
+  '48':'1.500 ETICHETTE'
+};
+const cntMem=JSON.parse(localStorage.getItem('cntMem')||'{}');
+function normCnt(v){   // "1500" / "1.500" -> "1.500 ETICHETTE"; il testo con lettere resta com'e
+  v=(v||'').trim();
+  if(/^\d[\d.\s]*$/.test(v))return v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' ETICHETTE';
+  return v;
+}
+function cntX100(r){
+  const a=r.codice_articolo;
+  if(a in cntMem)return normCnt(cntMem[a]);                                   // 1) valore salvato per questo articolo
+  const m=(r.descrizione||'').match(/(\d[\d.]*)\s*(?:ETICHETTE|ETICH|ETIC|ETI)\b/i);
+  if(m)return m[1].replace(/\./g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' ETICHETTE';   // 2) dalla descrizione
+  const f=a.match(/^X100(\d{2})/);
+  return (f&&CNT_X100[f[1]])||'';                                    // 3) tabella per formato, altrimenti vuoto
+}
+
+/* ---------- Impostazioni foglio per formato ---------- */
+const geo={
+  std:{mt:8,mx:6,gap:3,cut:true},
+  x100:{mt:8.4,mx:5.45,gap:3,cut:true}   /* misure del modello A407.pdf */
+};
+const isX=()=>$('tpl').value==='x100';
+const gk=()=>isX()?'x100':'std';
+function geoToInputs(){const g=geo[gk()];$('mt').value=g.mt;$('mx').value=g.mx;$('gap').value=g.gap;$('cut').checked=g.cut}
+function inputsToGeo(){const g=geo[gk()];g.mt=+$('mt').value||0;g.mx=+$('mx').value||0;g.gap=+$('gap').value||0;g.cut=$('cut').checked}
+function applyFmt(){
+  const x=isX();
+  $('lp').style.display=x?'none':'';
+  if(applyFmt.last!==x){applyFmt.last=x;$('qty').value=x?32:6;$('start').value=1}
+  $('lsub').textContent=x?'Riga 2 (es. 1.500 ETICHETTE)':'Riga 2 (es. SUPER PERMANENTE)';
+  $('lmod').textContent=x?'Codice':'Modello';
+  $('sub').placeholder=x?'es. 1.500 ETICHETTE':'';
+  geoToInputs();
+}
 
 /* ---------- Supabase ---------- */
 function baseOf(m){const x=(m||'').toUpperCase().match(/([ACR]\d{3})(?!\d)/);return x?x[1]:''}
@@ -275,7 +314,7 @@ async function load(force){
     }catch(e){}
   }
   try{
-const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
+    const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X210*,codice_articolo.ilike.X220*)';
     const all=[];
     for(let off=0;;off+=1000){
       const r=await fetch(`${SB_URL}/rest/v1/ean?select=codice,codice_articolo,descrizione&${f}&order=codice_articolo,codice&limit=1000&offset=${off}`,{headers:{apikey:SB_KEY}});
@@ -287,7 +326,7 @@ const f='or=(codice_articolo.ilike.X100*,codice_articolo.ilike.X210*,codice_arti
     const m={};
     all.forEach(x=>{
       const o=m[x.codice_articolo]||(m[x.codice_articolo]={codice_articolo:x.codice_articolo,descrizione:x.descrizione,eans:[]});
-      if(/^\d{13}$/.test(x.codice||'')&&!o.eans.includes(x.codice))o.eans.push(x.codice);
+      if(/^\d{13}$/.test(x.codice||'')&&!x.codice.startsWith('9')&&!o.eans.includes(x.codice))o.eans.push(x.codice);
     });
     const list=Object.values(m);
     useRows(list);
@@ -315,31 +354,33 @@ function sizeX100(d){
   let m=d.match(/(\d+(?:[.,]\d+)?)\s*X\s*(\d+(?:[.,]\d+)?)/i);
   if(m)return m[1]+'x'+m[2];
   m=d.match(/DM\.?\s*(\d+(?:[.,]\d+)?)/i);
-  return m?'Ø '+m[1]:'';
+  return m?'\u00d8 '+m[1]:'';
 }
 function fillFields(){
-  const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
+  applyFmt();
+  const r=rows.find(x=>x.codice_articolo===$('art').value);
+  if(!r){render();return}
   const p=parseDesc(r.codice_articolo,r.descrizione,sizeBase),t=$('tpl').value;
   let mod=p.mod,sub=p.sub,sz=p.size;
   if(t==='inu'){const n=(r.descrizione||'').match(/(?:^|[\s+*])X(\d{4,6})(?=[\s\-]|$)/i);if(n)mod=n[1];sub=''}
   if(t==='top')sub=sub.replace(/TOP\s*QUALITY/i,'').replace(/\s+/g,' ').trim();
-  if(t==='x100'){mod=r.codice_articolo;sz=sizeX100(r.descrizione);sub=''}
+  if(t==='x100'){mod=r.codice_articolo;sz=sizeX100(r.descrizione);sub=cntX100(r)}
   $('mod').value=mod;$('size').value=sz;$('sub').value=sub;
-  $('pcs').value=t==='x100'?'1.500':'10';
+  if(t!=='x100')$('pcs').value='10';
   $('qty').value=t==='x100'?32:6;
+  render();
 }
-
 $('tpl').onchange=fillFields;
 function pick(){
   const r=rows.find(x=>x.codice_articolo===$('art').value);if(!r)return;
-$('tpl').value=/^X100/i.test(r.codice_articolo)?'x100':/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
-fillFields();
-
-  $('eans').innerHTML=[...new Set([...r.eans,...Object.values(eanMem)])].map(e=>`<option value="${e}">`).join('');
-$('ean').value=eanMem[r.codice_articolo]||(r.codice_articolo.startsWith('X100')&&r.eans.find(e=>e.startsWith('80070479')))||r.eans[0]||'';
-
-  const sl=$('eansel');sl.style.display=r.eans.length>1?'block':'none';
-  sl.innerHTML=r.eans.map(e=>`<option ${e===$('ean').value?'selected':''}>${e}</option>`).join('');
+  $('tpl').value=/^X100/i.test(r.codice_articolo)?'x100':/^X2\d0INU/i.test(r.codice_articolo)?'inu':/^X2\d0TOP/i.test(r.codice_articolo)?'top':'markin';
+  fillFields();
+  const eans=r.eans.filter(e=>!e.startsWith('9'));   // gli EAN che iniziano con 9 non si usano (vale anche per la cache)
+  $('eans').innerHTML=eans.map(e=>`<option value="${e}">`).join('');
+  $('ean').value='';                                  // nessun EAN preselezionato: lo scegli tu
+  const sl=$('eansel');sl.style.display=eans.length?'block':'none';
+  sl.innerHTML='<option value="">\u2014 scegli EAN \u2014</option>'+eans.map(e=>`<option>${e}</option>`).join('');
+  render();
 }
 
 /* ---------- EAN-13 ---------- */
@@ -363,10 +404,9 @@ function barcode(c){
 function label(it){
   if(!it)return '<div class="lbl"></div>';
   if(it.tpl==='x100'){
-  const c=full13(it.ean);
-  return `<div class="lbl x100">${it.size?`<div class="f1">Formato ${it.size} mm.</div>`:''}${it.pcs?`<div class="f2">${it.pcs} ETICHETTE</div>`:''}<div class="f3">Cod. ${it.mod}</div>${c?`<div class="bcx">${barcode(c)}<div class="dg">${c[0]} ${c.slice(1,7)}  ${c.slice(7)}</div></div>`:''}</div>`;
-}
-
+    const c=full13(it.ean);
+    return `<div class="lbl x100">${it.size?`<div class="f1">Formato ${it.size} mm.</div>`:''}${it.sub?`<div class="f2">${it.sub}</div>`:''}<div class="f3">Cod. ${it.mod}</div>${c?`<div class="bcx">${barcode(c)}<div class="dg">${c[0]} ${c.slice(1,7)}  ${c.slice(7)}</div></div>`:''}</div>`;
+  }
   const c=full13(it.ean);
   const t=it.tpl||'markin',brand={markin:'MARKIN',inu:'INLINEA',top:'TOP QUALITY'}[t];
   const size=t==='markin'?it.size:it.size.replace(/(\d)X(?=\d)/g,'$1x');
@@ -375,7 +415,6 @@ function label(it){
   ${c?`<div class="bc">${barcode(c)}<div class="dig"><span class="d0">${c[0]}</span><span class="d1">${c.slice(1,7).split('').map(x=>`<i>${x}</i>`).join('')}</span><span class="d2">${c.slice(7).split('').map(x=>`<i>${x}</i>`).join('')}</span></div></div>`:''}
 <div class="foot" style="${it.lotto?'':'justify-content:center'}">${it.lotto?`<span>lotto ${it.lotto}</span>`:''}<span>${it.pcs?it.pcs+' pcs.':''}</span></div></div>`;
 }
-function render(){
 function sheetsHtml(list,per,cls){
   const slots=[];
   list.forEach(it=>{
@@ -383,26 +422,37 @@ function sheetsHtml(list,per,cls){
     for(let i=0;i<it.qty;i++)slots.push(it);
   });
   const pages=Math.max(1,Math.ceil(slots.length/per));
+  const cut=geo[cls?'x100':'std'].cut;
   let h='';
   for(let p=0;p<pages;p++){
-    h+=`<div class="sheet ${$('cut').checked?'cut':''} ${cls}">`;
+    h+=`<div class="sheet ${cut?'cut':''} ${cls}">`;
     for(let i=0;i<per;i++)h+=label(slots[p*per+i]);
     h+='</div>';
   }
   return {h,pages};
 }
-
-  const A=items.filter(i=>i.tpl!=='x100'),B=items.filter(i=>i.tpl==='x100');
+/* anteprima sempre "dal vivo": l'articolo nel modulo appare subito, senza "Aggiungi al foglio" */
+function draft(){
+  const x=isX();
+  return {tpl:$('tpl').value,art:$('art').value||$('mod').value,mod:$('mod').value,size:$('size').value,
+    sub:x?normCnt($('sub').value):$('sub').value,ean:$('ean').value,
+    lotto:x?'':$('lotto').value,pcs:x?'':$('pcs').value,
+    qty:Math.max(1,+$('qty').value||1),start:Math.min(x?32:6,Math.max(1,+$('start').value||1))};
+}
+function render(){
+  const x=isX();
+  const D=$('mod').value?[draft()]:[];
+  const A=items.filter(i=>i.tpl!=='x100').concat(x?[]:D),B=items.filter(i=>i.tpl==='x100').concat(x?D:[]);
   let h='',pages=0;
-  if(A.length||!B.length){const r=sheetsHtml(A,6,'');h+=r.h;pages+=r.pages}
-  if(B.length){const r=sheetsHtml(B,32,'s32');h+=r.h;pages+=r.pages}
+  if(A.length||(!x&&!B.length)){const r=sheetsHtml(A,6,'');h+=r.h;pages+=r.pages}
+  if(B.length||x){const r=sheetsHtml(B,32,'s32');h+=r.h;pages+=r.pages}
   $('pages').innerHTML=h;
-
-  const n=items.reduce((t,x)=>t+x.qty,0);
+  const n=A.concat(B).reduce((t,v)=>t+v.qty,0);
   $('meta').textContent=(pages>1?pages+' fogli A4':'1 foglio A4')+' \u00b7 '+n+' etichette';$('tn').textContent=n;fit();
   $('list').innerHTML=items.map((it,i)=>`<div class="it"><span><b>${it.art}</b><em>\u00d7 ${it.qty}</em></span><span class="x" data-i="${i}">${ICON_X}</span></div>`).join('');
   const s=document.documentElement.style;
-  s.setProperty('--mt',$('mt').value+'mm');s.setProperty('--mx',$('mx').value+'mm');s.setProperty('--gap',$('gap').value+'mm');
+  s.setProperty('--mt',geo.std.mt+'mm');s.setProperty('--mx',geo.std.mx+'mm');s.setProperty('--gap',geo.std.gap+'mm');
+  s.setProperty('--mt32',geo.x100.mt+'mm');s.setProperty('--mx32',geo.x100.mx+'mm');s.setProperty('--gap32',geo.x100.gap+'mm');
 }
 
 $('q').oninput=()=>{$('art').value='';fill()};
@@ -416,17 +466,21 @@ $('q').onkeydown=e=>{
 };
 $('sug').onmousedown=e=>{const d=e.target.closest('div[data-i]');if(d){e.preventDefault();choose(cur[+d.dataset.i])}};
 document.addEventListener('click',e=>{if(!e.target.closest('#sw'))$('sug').style.display='none'});
-$('eansel').onchange=e=>{$('ean').value=e.target.value};
+$('eansel').onchange=e=>{$('ean').value=e.target.value;render()};
 $('ean').onfocus=e=>e.target.select();
 $('add').onclick=()=>{
   const art=$('art').value||$('mod').value;
   if(!$('mod').value)return alert('Scegli un articolo');
-  if(!full13($('ean').value)&&!confirm('EAN non valido o vuoto - continuare senza codice a barre?'))return;
+  if(!full13($('ean').value))return alert('Scegli un EAN valido');
   if($('art').value)eanMem[$('art').value]=$('ean').value,localStorage.setItem('eanMem',JSON.stringify(eanMem));
-  items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:$('sub').value,ean:$('ean').value,
-    lotto:$('lotto').value,pcs:$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(32,Math.max(1,+$('start').value||1))});
-$('start').value=1;render();
-
+  const x=isX();
+  items.push({tpl:$('tpl').value,art,mod:$('mod').value,size:$('size').value,sub:x?normCnt($('sub').value):$('sub').value,ean:$('ean').value,
+    lotto:x?'':$('lotto').value,pcs:x?'':$('pcs').value,qty:Math.max(1,+$('qty').value||1),start:Math.min(x?32:6,Math.max(1,+$('start').value||1))});
+  $('start').value=1;
+  // l'etichetta e' ora nel foglio: svuota il modulo per scegliere il prossimo articolo (niente doppioni nell'anteprima)
+  ['q','art','mod','size','sub','ean'].forEach(i=>$(i).value='');
+  $('eansel').style.display='none';$('sug').style.display='none';$('qty').value=x?32:6;
+  render();
 };
 
 $('list').onclick=e=>{const x=e.target.closest('.x');if(x){items.splice(+x.dataset.i,1);render()}};
@@ -448,8 +502,13 @@ $('t-print').onclick=()=>window.print();
 
 addEventListener('resize',fit);
 $('print').onclick=()=>window.print();
-['mt','mx','gap','cut'].forEach(i=>$(i).oninput=render);
-render();load();
+['mt','mx','gap','cut'].forEach(i=>{$(i).oninput=()=>{inputsToGeo();render()};$(i).onchange=()=>{inputsToGeo();render()}});
+['mod','size','sub','ean','qty','start','lotto','pcs'].forEach(i=>$(i).addEventListener('input',render));
+$('sub').addEventListener('change',()=>{if(isX()){$('sub').value=normCnt($('sub').value);render()}});
+$('sub').addEventListener('input',()=>{   // X100: ricorda il numero scelto per questo articolo
+  if(isX()&&$('art').value){cntMem[$('art').value]=$('sub').value;try{localStorage.setItem('cntMem',JSON.stringify(cntMem))}catch(e){}}
+});
+applyFmt();render();load();
 if('serviceWorker' in navigator){
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW',e)));
 }
